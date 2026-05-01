@@ -3,6 +3,8 @@ export type ProfileType =
   | 'individual_professional'
   | 'community_org'
   | 'business_service_provider'
+  | 'volunteer'
+  | 'resource_navigator'
 
 export interface UserOrganization {
   id: number

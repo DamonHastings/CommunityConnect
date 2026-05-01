@@ -30,6 +30,8 @@ export const PROFILE_TYPE_LABELS: Record<ProfileType, string> = {
   individual_professional: 'Individual — Service Professional',
   community_org: 'Community Organization',
   business_service_provider: 'Business / Service Provider',
+  volunteer: 'Volunteer',
+  resource_navigator: 'Resource Navigator / Advocate',
 }
 
 export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string; description: string }[] = [
@@ -39,9 +41,19 @@ export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string; descript
     description: 'I\'m looking for services, programs, or support for myself or my family.',
   },
   {
+    value: 'volunteer',
+    label: 'Volunteer',
+    description: 'I want to give my time and skills to support organizations and community programs.',
+  },
+  {
+    value: 'resource_navigator',
+    label: 'Resource navigator / advocate',
+    description: 'I help others find and access services — as a case worker, community navigator, or advocate.',
+  },
+  {
     value: 'individual_professional',
     label: 'Professional offering services',
-    description: 'I\'m a practitioner, consultant, or volunteer offering skills to organizations or individuals.',
+    description: 'I\'m a licensed practitioner or consultant offering professional services to orgs or individuals.',
   },
   {
     value: 'community_org',

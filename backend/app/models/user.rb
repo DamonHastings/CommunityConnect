@@ -12,7 +12,9 @@ class User < ApplicationRecord
     individual_seeker: 0,
     individual_professional: 1,
     community_org: 2,
-    business_service_provider: 3
+    business_service_provider: 3,
+    volunteer: 4,
+    resource_navigator: 5
   }
 
   validates :first_name, presence: true
