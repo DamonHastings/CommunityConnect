@@ -39,7 +39,7 @@ class Api::V1::Organizations::MembershipsController < ApplicationController
   private
 
   def set_organization
-    @organization = Organization.find(params[:organization_id])
+    @organization = Organization.find(params[:id])
   end
 
   def membership_data(membership)

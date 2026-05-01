@@ -1,14 +1,14 @@
 FactoryBot.define do
   factory :engagement_opportunity do
-    organization { nil }
-    title { "MyString" }
-    description { "MyText" }
-    opportunity_type { 1 }
-    status { 1 }
-    remote { false }
-    start_date { "2026-05-01" }
-    end_date { "2026-05-01" }
-    requirements { "MyText" }
-    contact_email { "MyString" }
+    association :organization
+    title            { Faker::Lorem.sentence(word_count: 4) }
+    description      { Faker::Lorem.paragraph }
+    opportunity_type { :volunteer }
+    status           { :open }
+    remote           { false }
+    start_date       { Date.current + 1.week }
+    end_date         { Date.current + 2.weeks }
+    requirements     { Faker::Lorem.sentence }
+    contact_email    { Faker::Internet.email }
   end
 end
