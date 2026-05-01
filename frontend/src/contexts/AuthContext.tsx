@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import api from '../lib/api'
-import type { User } from '../types'
+import type { User, ProfileType } from '../types'
 
 interface AuthContextValue {
   user: User | null
@@ -10,6 +10,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
+  updateProfile: (data: ProfileUpdateData) => Promise<void>
 }
 
 interface RegisterData {
@@ -18,6 +19,19 @@ interface RegisterData {
   password_confirmation: string
   first_name: string
   last_name: string
+  profile_type: ProfileType
+}
+
+export interface ProfileUpdateData {
+  profile_type?: ProfileType
+  bio?: string
+  phone?: string
+  city?: string
+  state?: string
+  website?: string
+  availability?: string
+  services_offered?: string[]
+  services_needed?: string[]
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -80,8 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const updateProfile = async (data: ProfileUpdateData) => {
+    const res = await api.patch('/auth/me', { user: data })
+    setUser(res.data.user)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   )

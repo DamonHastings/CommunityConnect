@@ -1,3 +1,15 @@
+export type ProfileType =
+  | 'individual_seeker'
+  | 'individual_professional'
+  | 'community_org'
+  | 'business_service_provider'
+
+export interface UserOrganization {
+  id: number
+  name: string
+  role: 'admin' | 'member'
+}
+
 export interface User {
   id: number
   email: string
@@ -5,7 +17,16 @@ export interface User {
   last_name: string
   full_name: string
   platform_admin: boolean
-  organizations: OrganizationMembership[]
+  profile_type: ProfileType
+  bio: string | null
+  phone: string | null
+  city: string | null
+  state: string | null
+  website: string | null
+  availability: string | null
+  services_offered: string[]
+  services_needed: string[]
+  organizations: UserOrganization[]
   created_at: string
 }
 
