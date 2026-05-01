@@ -1,0 +1,61 @@
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { Button } from '../ui/Button'
+
+export function Navbar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
+
+  return (
+    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-2 font-bold text-indigo-600 text-lg">
+              <span className="text-2xl">🤝</span>
+              CommunityConnect
+            </Link>
+            <div className="hidden items-center gap-6 md:flex">
+              <Link to="/organizations" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Organizations
+              </Link>
+              <Link to="/opportunities" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Opportunities
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    Dashboard
+                  </Button>
+                </Link>
+                <span className="text-sm text-gray-600 hidden sm:block">{user.full_name}</span>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">Log in</Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">Sign up</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  )
+}

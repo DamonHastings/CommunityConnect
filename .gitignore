@@ -1,0 +1,23 @@
+# Backend
+backend/.bundle/
+backend/log/*.log
+backend/tmp/
+backend/storage/
+backend/public/system
+backend/public/uploads
+backend/config/credentials/*.key
+backend/config/master.key
+backend/.kamal/secrets
+backend/db/*.sqlite3
+backend/vendor/bundle/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# OS
+.DS_Store
+*.swp
+*.swo
