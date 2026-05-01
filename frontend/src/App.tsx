@@ -12,6 +12,8 @@ import { OpportunitiesPage } from './pages/opportunities/OpportunitiesPage'
 import { OpportunityDetailPage } from './pages/opportunities/OpportunityDetailPage'
 import { OpportunityFormPage } from './pages/opportunities/OpportunityFormPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
+import { ProfilePage } from './pages/profile/ProfilePage'
+import { UserProfilePage } from './pages/profile/UserProfilePage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -39,8 +41,11 @@ function AppRoutes() {
         <Route path="/opportunities" element={<OpportunitiesPage />} />
         <Route path="/opportunities/:id" element={<OpportunityDetailPage />} />
 
+        <Route path="/users/:id" element={<UserProfilePage />} />
+
         {/* Protected routes */}
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+        <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/organizations/new" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/edit" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/opportunities/new" element={<RequireAuth><OpportunityFormPage /></RequireAuth>} />

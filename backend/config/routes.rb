@@ -14,6 +14,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get "auth/me", to: "auth/profiles#show"
+      patch "auth/me", to: "auth/profiles#update"
+
+      resources :users, only: [:show]
 
       resources :organizations do
         member do

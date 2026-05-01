@@ -8,8 +8,18 @@ class User < ApplicationRecord
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships
 
+  enum :profile_type, {
+    individual_seeker: 0,
+    individual_professional: 1,
+    community_org: 2,
+    business_service_provider: 3,
+    volunteer: 4,
+    resource_navigator: 5
+  }
+
   validates :first_name, presence: true
   validates :last_name, presence: true
+  validates :profile_type, presence: true
 
   def full_name
     "#{first_name} #{last_name}"

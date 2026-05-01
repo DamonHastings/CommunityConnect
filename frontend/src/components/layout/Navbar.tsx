@@ -38,7 +38,9 @@ export function Navbar() {
                     Dashboard
                   </Button>
                 </Link>
-                <span className="text-sm text-gray-600 hidden sm:block">{user.full_name}</span>
+                <Link to="/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900 hidden sm:block">
+                  {user.full_name}
+                </Link>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   Log out
                 </Button>

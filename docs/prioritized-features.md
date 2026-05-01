@@ -17,8 +17,8 @@ Items marked ✅ are already built. Items without a mark need to be built.
 | 1 | User registration and authentication | All | ✅ | Devise + JWT, fully implemented |
 | 2 | Organization profiles (create, edit, discover) | UC-2, UC-3, UC-6 | ✅ | CRUD, geocoding, full-text search |
 | 3 | Organization discoverability (search + filter) | UC-2, UC-3, UC-4 | ✅ | pg_search, category/location filters |
-| 4 | Individual user profiles (beyond auth — bio, services offered/needed, role type) | UC-1, UC-5 | — | Individuals currently exist only as auth users; need richer profiles with role type (seeker vs. provider) |
-| 5 | Account/profile type system (individual seeker, individual professional, community org, business/service provider) | UC-1, UC-3, UC-5 | — | Atnap ≠ Better Youth ≠ Rachel; type determines which features and UI flows are available |
+| 4 | Individual user profiles (beyond auth — bio, services offered/needed, role type) | UC-1, UC-5 | ✅ | profile_type enum, bio, phone, city/state, website, availability, services_offered/needed arrays; edit at /profile |
+| 5 | Account/profile type system (individual seeker, individual professional, community org, business/service provider) | UC-1, UC-3, UC-5 | ✅ | 4-way enum on User; selected during registration (step 2); drives label display throughout app |
 
 ---
 
