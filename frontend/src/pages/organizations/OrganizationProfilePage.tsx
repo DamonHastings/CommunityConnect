@@ -1,13 +1,89 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useOrganization } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
+import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { CATEGORY_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight } from 'lucide-react'
+import type { EngagementOpportunity } from '../../types'
+
+function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
+  const [open, setOpen] = useState(false)
+  const { data, isLoading } = useOpportunityApplications(open ? opp.id : undefined)
+  const update = useUpdateApplication()
+  const apps = data?.applications ?? []
+
+  return (
+    <div className="mt-2 border-t pt-2">
+      <button
+        className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        Applications {data ? `(${apps.length})` : ''}
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {isLoading && <p className="text-sm text-gray-400">Loading…</p>}
+          {!isLoading && apps.length === 0 && (
+            <p className="text-sm text-gray-400">No applications yet.</p>
+          )}
+          {apps.map((app) => (
+            <div key={app.id} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-medium text-gray-900">{app.applicant.name}</p>
+                  <p className="text-gray-500">{app.applicant.email}</p>
+                  {app.message && <p className="mt-1 text-gray-600 line-clamp-2">{app.message}</p>}
+                  <p className="mt-1 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <ApplicationStatusBadge status={app.status} />
+                  {app.status === 'pending' && (
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={update.isPending}
+                        onClick={() => update.mutate({ id: app.id, status: 'approved' })}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={update.isPending}
+                        onClick={() => update.mutate({ id: app.id, status: 'rejected' })}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ApplicationStatusBadge({ status }: { status: string }) {
+  const variants: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
+    pending: 'warning',
+    approved: 'success',
+    rejected: 'error',
+    withdrawn: 'default',
+  }
+  return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
+}
 
 export function OrganizationProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -91,7 +167,10 @@ export function OrganizationProfilePage() {
             ) : (
               <div className="space-y-3">
                 {openOpps.map((opp) => (
-                  <OpportunityCard key={opp.id} opportunity={opp} />
+                  <div key={opp.id}>
+                    <OpportunityCard opportunity={opp} />
+                    {isAdmin && <OppApplicationsPanel opp={opp} />}
+                  </div>
                 ))}
               </div>
             )}

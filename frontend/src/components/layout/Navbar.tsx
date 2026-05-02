@@ -1,10 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { Button } from '../ui/Button'
 
 export function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isIntakeGated =
+    user?.profile_type === 'individual_seeker' &&
+    user.intake_completed === false &&
+    location.pathname === '/intake'
 
   const handleLogout = async () => {
     await logout()
@@ -20,27 +25,38 @@ export function Navbar() {
               <span className="text-2xl">🤝</span>
               CommunityConnect
             </Link>
-            <div className="hidden items-center gap-6 md:flex">
-              <Link to="/organizations" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Organizations
-              </Link>
-              <Link to="/opportunities" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Opportunities
-              </Link>
-            </div>
+            {!isIntakeGated && (
+              <div className="hidden items-center gap-6 md:flex">
+                <Link to="/organizations" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Organizations
+                </Link>
+                <Link to="/opportunities" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Opportunities
+                </Link>
+                {user && (
+                  <Link to="/my-applications" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    My Applications
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link to="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link to="/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900 hidden sm:block">
-                  {user.full_name}
-                </Link>
+                {!isIntakeGated && (
+                  <>
+                    <Link to="/dashboard">
+                      <Button variant="ghost" size="sm">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Link to="/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900 hidden sm:block">
+                      {user.full_name}
+                    </Link>
+                  </>
+                )}
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   Log out
                 </Button>

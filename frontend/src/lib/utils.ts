@@ -67,6 +67,21 @@ export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string; descript
   },
 ]
 
+export const NEEDS_CATEGORY_LABELS: Record<string, string> = {
+  food_nutrition: 'Food & nutrition',
+  housing_shelter: 'Housing & shelter',
+  healthcare: 'Healthcare',
+  mental_health: 'Mental health',
+  job_training: 'Job training & employment',
+  education: 'Education',
+  transportation: 'Transportation',
+  legal_aid: 'Legal aid',
+  financial_assistance: 'Financial assistance',
+  childcare: 'Childcare',
+  substance_use_support: 'Substance use support',
+  other: 'Other',
+}
+
 export function formatDate(date: string | null): string {
   if (!date) return ''
   return new Date(date).toLocaleDateString('en-US', {

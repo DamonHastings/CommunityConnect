@@ -16,6 +16,12 @@ Rails.application.routes.draw do
       get "auth/me", to: "auth/profiles#show"
       patch "auth/me", to: "auth/profiles#update"
 
+      get "intake", to: "intake_responses#show"
+      post "intake", to: "intake_responses#upsert"
+      patch "intake", to: "intake_responses#upsert"
+
+      get "matches", to: "matches#show"
+
       resources :users, only: [:show]
 
       resources :organizations do
@@ -26,7 +32,11 @@ Rails.application.routes.draw do
         resources :opportunities, controller: "engagement_opportunities", only: [:index, :create]
       end
 
-      resources :opportunities, controller: "engagement_opportunities", only: [:index, :show, :update, :destroy]
+      resources :opportunities, controller: "engagement_opportunities", only: [:index, :show, :update, :destroy] do
+        resources :applications, controller: "service_applications", only: [:index, :create]
+      end
+      resources :applications, controller: "service_applications", only: [:update, :destroy]
+      get "my/applications", to: "my_applications#index"
     end
   end
 

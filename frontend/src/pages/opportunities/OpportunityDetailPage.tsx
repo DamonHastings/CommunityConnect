@@ -1,9 +1,14 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useOpportunity } from '../../hooks/useOpportunities'
+import { useApply, useWithdrawApplication } from '../../hooks/useApplications'
+import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
+import { Button } from '../../components/ui/Button'
 import { OPPORTUNITY_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { Calendar, MapPin, Mail, Building2, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, Mail, Building2, ArrowLeft, CheckCircle, XCircle, Clock, Undo2 } from 'lucide-react'
+import type { ApplicationStatus } from '../../types'
 
 const STATUS_VARIANTS = {
   open: 'success',
@@ -11,15 +16,45 @@ const STATUS_VARIANTS = {
   filled: 'warning',
 } as const
 
+const APPLICATION_STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default'; icon: React.ReactNode }> = {
+  pending: { label: 'Application Pending', variant: 'warning', icon: <Clock className="h-4 w-4" /> },
+  approved: { label: 'Application Approved', variant: 'success', icon: <CheckCircle className="h-4 w-4" /> },
+  rejected: { label: 'Application Rejected', variant: 'error', icon: <XCircle className="h-4 w-4" /> },
+  withdrawn: { label: 'Application Withdrawn', variant: 'default', icon: <Undo2 className="h-4 w-4" /> },
+}
+
 export function OpportunityDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const { data: opp, isLoading } = useOpportunity(id!)
+  const [message, setMessage] = useState('')
+  const [applyOpen, setApplyOpen] = useState(false)
+
+  const apply = useApply(Number(id))
+  const withdraw = useWithdrawApplication()
 
   if (isLoading) {
     return <div className="h-48 animate-pulse rounded-xl bg-gray-200" />
   }
 
   if (!opp) return <div className="py-16 text-center text-gray-500">Opportunity not found.</div>
+
+  const myApp = opp.my_application
+  const canApply = user && opp.status === 'open' && !myApp
+
+  const handleApply = () => {
+    apply.mutate(message, {
+      onSuccess: () => {
+        setApplyOpen(false)
+        setMessage('')
+      },
+    })
+  }
+
+  const handleWithdraw = () => {
+    if (!myApp) return
+    withdraw.mutate({ id: myApp.id, opportunityId: Number(id) })
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -77,6 +112,60 @@ export function OpportunityDetailPage() {
             <div>
               <h2 className="mb-2 font-semibold text-gray-900">Requirements</h2>
               <p className="text-gray-700 whitespace-pre-line">{opp.requirements}</p>
+            </div>
+          )}
+
+          {/* Application section */}
+          {user && (
+            <div className="border-t pt-4">
+              {myApp ? (
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {APPLICATION_STATUS_CONFIG[myApp.status].icon}
+                    <span className="text-sm font-medium text-gray-700">
+                      {APPLICATION_STATUS_CONFIG[myApp.status].label}
+                    </span>
+                  </div>
+                  {myApp.status === 'pending' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleWithdraw}
+                      disabled={withdraw.isPending}
+                    >
+                      Withdraw
+                    </Button>
+                  )}
+                </div>
+              ) : canApply ? (
+                applyOpen ? (
+                  <div className="space-y-3">
+                    <h2 className="font-semibold text-gray-900">Apply to this opportunity</h2>
+                    <textarea
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      rows={3}
+                      placeholder="Optional: introduce yourself or explain why you're interested…"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
+                    {apply.error && (
+                      <p className="text-sm text-red-600">
+                        {(apply.error as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors?.[0] ?? 'Something went wrong'}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button onClick={handleApply} disabled={apply.isPending}>
+                        {apply.isPending ? 'Submitting…' : 'Submit Application'}
+                      </Button>
+                      <Button variant="outline" onClick={() => setApplyOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button onClick={() => setApplyOpen(true)}>Apply to this opportunity</Button>
+                )
+              ) : null}
             </div>
           )}
         </CardBody>

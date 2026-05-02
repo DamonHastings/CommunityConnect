@@ -1,5 +1,6 @@
 class EngagementOpportunity < ApplicationRecord
   belongs_to :organization
+  has_many :service_applications, dependent: :destroy
 
   enum :opportunity_type, {
     volunteer: 0,

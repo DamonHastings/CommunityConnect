@@ -48,7 +48,7 @@ export function RegisterPage() {
     setIsSubmitting(true)
     try {
       await registerUser({ ...step1Data, profile_type: selectedType })
-      navigate('/profile')
+      navigate(selectedType === 'individual_seeker' ? '/intake' : '/profile')
     } catch (err: unknown) {
       const errs = (err as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors
       setServerErrors(errs || ['Registration failed. Please try again.'])

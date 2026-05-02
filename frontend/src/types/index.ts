@@ -30,6 +30,48 @@ export interface User {
   services_needed: string[]
   organizations: UserOrganization[]
   created_at: string
+  intake_completed?: boolean | null
+}
+
+export type HousingStatus =
+  | 'stable'
+  | 'at_risk'
+  | 'transitional'
+  | 'experiencing_homelessness'
+  | 'prefer_not_to_say'
+
+export type EmploymentStatus =
+  | 'employed_full_time'
+  | 'employed_part_time'
+  | 'unemployed_seeking'
+  | 'unemployed_not_seeking'
+  | 'self_employed'
+  | 'unable_to_work'
+
+export type IntakeUrgency = 'immediate' | 'within_weeks' | 'within_months' | 'ongoing'
+
+export interface IntakeResponse {
+  id: number
+  user_id: number
+  housing_status: HousingStatus
+  employment_status: EmploymentStatus
+  needs_categories: string[]
+  urgency: IntakeUrgency
+  goals: string | null
+  barriers: string | null
+  preferred_contact: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface IntakeFormData {
+  housing_status: HousingStatus
+  employment_status: EmploymentStatus
+  needs_categories: string[]
+  urgency: IntakeUrgency
+  goals: string
+  barriers: string
+  preferred_contact: string
 }
 
 export interface Organization {
@@ -64,6 +106,23 @@ export interface OrganizationMembership {
   joined_at: string | null
 }
 
+export type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn'
+
+export interface ServiceApplication {
+  id: number
+  status: ApplicationStatus
+  message: string | null
+  notes: string | null
+  applicant: { id: number; name: string; email: string }
+  opportunity: {
+    id: number
+    title: string
+    organization: { id: number; name: string }
+  }
+  created_at: string
+  updated_at: string
+}
+
 export interface EngagementOpportunity {
   id: number
   title: string
@@ -77,6 +136,7 @@ export interface EngagementOpportunity {
   contact_email: string | null
   organization: { id: number; name: string }
   created_at: string
+  my_application?: { id: number; status: ApplicationStatus } | null
 }
 
 export type OrganizationCategory =

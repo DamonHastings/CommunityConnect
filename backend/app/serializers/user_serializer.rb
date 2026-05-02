@@ -13,6 +13,10 @@ class UserSerializer
     user.full_name
   end
 
+  attribute :intake_completed do |user|
+    user.profile_type == 'individual_seeker' ? user.user_intake_response.present? : nil
+  end
+
   attribute :organizations do |user|
     user.organizations.map do |org|
       membership = user.organization_memberships.find { |m| m.organization_id == org.id }

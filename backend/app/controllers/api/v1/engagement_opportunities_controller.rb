@@ -24,7 +24,7 @@ class Api::V1::EngagementOpportunitiesController < ApplicationController
   end
 
   def show
-    render json: { opportunity: serialize(@opportunity) }
+    render json: { opportunity: serialize_with_user(@opportunity) }
   end
 
   def create
@@ -70,6 +70,10 @@ class Api::V1::EngagementOpportunitiesController < ApplicationController
 
   def serialize(opp)
     EngagementOpportunitySerializer.new(opp).serializable_hash[:data][:attributes]
+  end
+
+  def serialize_with_user(opp)
+    EngagementOpportunitySerializer.new(opp, params: { current_user: current_user }).serializable_hash[:data][:attributes]
   end
 
   def serialize_collection(opps)

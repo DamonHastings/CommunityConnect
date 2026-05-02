@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_01_205720) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_02_004629) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_205720) do
     t.string "zip"
   end
 
+  create_table "service_applications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "engagement_opportunity_id", null: false
+    t.text "message"
+    t.text "notes"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["engagement_opportunity_id"], name: "index_service_applications_on_engagement_opportunity_id"
+    t.index ["user_id", "engagement_opportunity_id"], name: "index_service_applications_on_user_and_opportunity", unique: true
+    t.index ["user_id"], name: "index_service_applications_on_user_id"
+  end
+
+  create_table "user_intake_responses", force: :cascade do |t|
+    t.text "barriers"
+    t.datetime "created_at", null: false
+    t.integer "employment_status", default: 0, null: false
+    t.text "goals"
+    t.integer "housing_status", default: 0, null: false
+    t.string "needs_categories", default: [], array: true
+    t.string "preferred_contact"
+    t.datetime "updated_at", null: false
+    t.integer "urgency", default: 0, null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_user_intake_responses_on_user_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "availability"
     t.text "bio"
@@ -93,4 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_205720) do
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "service_applications", "engagement_opportunities"
+  add_foreign_key "service_applications", "users"
+  add_foreign_key "user_intake_responses", "users"
 end

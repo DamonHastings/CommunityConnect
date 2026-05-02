@@ -4,4 +4,6 @@ class EngagementOpportunityPolicy < ApplicationPolicy
   def update? = user.present? && user.member_of?(record.organization)
 
   def destroy? = user.present? && (user.admin_of?(record.organization) || user.platform_admin?)
+
+  def view_applications? = user.present? && user.admin_of?(record.organization)
 end

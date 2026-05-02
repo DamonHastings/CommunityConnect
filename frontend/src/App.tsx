@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Layout } from './components/layout/Layout'
@@ -14,6 +14,8 @@ import { OpportunityFormPage } from './pages/opportunities/OpportunityFormPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { ProfilePage } from './pages/profile/ProfilePage'
 import { UserProfilePage } from './pages/profile/UserProfilePage'
+import { IntakeQuestionnairePage } from './pages/intake/IntakeQuestionnairePage'
+import { MyApplicationsPage } from './pages/applications/MyApplicationsPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -24,8 +26,16 @@ const queryClient = new QueryClient({
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth()
+  const location = useLocation()
   if (isLoading) return <div className="flex h-64 items-center justify-center text-gray-400">Loading…</div>
   if (!user) return <Navigate to="/login" replace />
+  if (
+    user.profile_type === 'individual_seeker' &&
+    user.intake_completed === false &&
+    location.pathname !== '/intake'
+  ) {
+    return <Navigate to="/intake" replace />
+  }
   return <>{children}</>
 }
 
@@ -44,11 +54,13 @@ function AppRoutes() {
         <Route path="/users/:id" element={<UserProfilePage />} />
 
         {/* Protected routes */}
+        <Route path="/intake" element={<RequireAuth><IntakeQuestionnairePage /></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/organizations/new" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/edit" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/opportunities/new" element={<RequireAuth><OpportunityFormPage /></RequireAuth>} />
+        <Route path="/my-applications" element={<RequireAuth><MyApplicationsPage /></RequireAuth>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

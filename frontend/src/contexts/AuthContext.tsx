@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import api from '../lib/api'
-import type { User, ProfileType } from '../types'
+import type { User, ProfileType, IntakeFormData } from '../types'
 
 interface AuthContextValue {
   user: User | null
@@ -11,6 +11,7 @@ interface AuthContextValue {
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (data: ProfileUpdateData) => Promise<void>
+  submitIntake: (data: IntakeFormData) => Promise<void>
 }
 
 interface RegisterData {
@@ -99,8 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.data.user)
   }
 
+  const submitIntake = async (data: IntakeFormData) => {
+    await api.post('/intake', { intake_response: data })
+    await fetchCurrentUser()
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateProfile, submitIntake }}>
       {children}
     </AuthContext.Provider>
   )
