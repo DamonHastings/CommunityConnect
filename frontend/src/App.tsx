@@ -16,6 +16,7 @@ import { ProfilePage } from './pages/profile/ProfilePage'
 import { UserProfilePage } from './pages/profile/UserProfilePage'
 import { IntakeQuestionnairePage } from './pages/intake/IntakeQuestionnairePage'
 import { MyApplicationsPage } from './pages/applications/MyApplicationsPage'
+import { MyServicesPage } from './pages/services/MyServicesPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -60,7 +61,8 @@ function AppRoutes() {
         <Route path="/organizations/new" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/edit" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/opportunities/new" element={<RequireAuth><OpportunityFormPage /></RequireAuth>} />
-        <Route path="/my-applications" element={<RequireAuth><MyApplicationsPage /></RequireAuth>} />
+        <Route path="/my-applications" element={<Navigate to="/my-services" replace />} />
+        <Route path="/my-services" element={<RequireAuth><MyServicesPage /></RequireAuth>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

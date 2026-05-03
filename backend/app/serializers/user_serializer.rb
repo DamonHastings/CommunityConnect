@@ -23,4 +23,8 @@ class UserSerializer
       { id: org.id, name: org.name, role: membership&.role }
     end
   end
+
+  attribute :saved_org_ids do |user|
+    user.saved_organizations.pluck(:organization_id)
+  end
 end

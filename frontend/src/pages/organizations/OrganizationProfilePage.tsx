@@ -3,13 +3,14 @@ import { useParams, Link } from 'react-router-dom'
 import { useOrganization } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
+import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { CATEGORY_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -104,6 +105,9 @@ export function OrganizationProfilePage() {
 
   const isAdmin = user?.organizations.some((m) => m.id === org.id && m.role === 'admin')
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
+  const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
+  const save = useSaveOrganization()
+  const unsave = useUnsaveOrganization()
 
   return (
     <div className="space-y-6">
@@ -118,14 +122,30 @@ export function OrganizationProfilePage() {
             <Badge variant={org.status === 'active' ? 'success' : 'default'}>{org.status}</Badge>
           </div>
         </div>
-        {isAdmin && (
-          <Link to={`/organizations/${org.id}/edit`}>
-            <Button variant="outline" size="sm">
-              <Pencil className="mr-1.5 h-4 w-4" />
-              Edit
+        <div className="flex items-center gap-2">
+          {user && !isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => isSaved ? unsave.mutate(org.id) : save.mutate(org.id)}
+            >
+              <Bookmark
+                className="mr-1.5 h-4 w-4"
+                fill={isSaved ? 'currentColor' : 'none'}
+                strokeWidth={isSaved ? 0 : 1.5}
+              />
+              {isSaved ? 'Saved' : 'Save'}
             </Button>
-          </Link>
-        )}
+          )}
+          {isAdmin && (
+            <Link to={`/organizations/${org.id}/edit`}>
+              <Button variant="outline" size="sm">
+                <Pencil className="mr-1.5 h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

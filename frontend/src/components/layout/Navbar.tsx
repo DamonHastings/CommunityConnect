@@ -34,8 +34,8 @@ export function Navbar() {
                   Opportunities
                 </Link>
                 {user && (
-                  <Link to="/my-applications" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    My Applications
+                  <Link to="/my-services" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    My Services
                   </Link>
                 )}
               </div>

@@ -9,7 +9,8 @@ import { Badge } from '../../components/ui/Badge'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { CATEGORY_LABELS, NEEDS_CATEGORY_LABELS } from '../../lib/utils'
-import { Building2, Briefcase, Plus, Users, Sparkles } from 'lucide-react'
+import { Building2, Briefcase, Plus, Users, Sparkles, ClipboardList, Bookmark, Clock, CheckCircle } from 'lucide-react'
+import { useMyApplications } from '../../hooks/useApplications'
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -22,12 +23,18 @@ export function DashboardPage() {
 
   const { data: recentOpps } = useOpportunities({ status: 'open', page: 1 })
   const { data: matches, isLoading: matchesLoading } = useMatches(!!showMatches)
+  const { data: appsData } = useMyApplications()
 
   if (!user) return null
 
   const needsLabels = (matches?.needs_categories ?? [])
     .map((n) => NEEDS_CATEGORY_LABELS[n])
     .filter(Boolean)
+
+  const applications = appsData?.applications ?? []
+  const pendingCount = applications.filter((a) => a.status === 'pending').length
+  const connectedCount = applications.filter((a) => a.status === 'approved').length
+  const savedCount = user?.saved_org_ids?.length ?? 0
 
   return (
     <div className="space-y-8">
@@ -108,6 +115,39 @@ export function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* My Services summary — individual seekers with completed intake */}
+      {showMatches && (
+        <section>
+          <Card>
+            <CardBody className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-6">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                  <ClipboardList className="h-5 w-5 text-indigo-600" />
+                  My Services
+                </h2>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-yellow-500" />
+                    {pendingCount} pending
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    {connectedCount} connected
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Bookmark className="h-4 w-4 text-indigo-500" />
+                    {savedCount} saved
+                  </span>
+                </div>
+              </div>
+              <Link to="/my-services" className="shrink-0 text-sm font-medium text-indigo-600 hover:underline">
+                View all →
+              </Link>
+            </CardBody>
+          </Card>
+        </section>
+      )}
 
       {showMatches ? (
         /* Matched for you — individual seekers with completed intake */

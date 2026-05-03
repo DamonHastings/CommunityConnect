@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_02_004629) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_200805) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_004629) do
     t.boolean "verified"
     t.string "website"
     t.string "zip"
+  end
+
+  create_table "saved_organizations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["organization_id"], name: "index_saved_organizations_on_organization_id"
+    t.index ["user_id", "organization_id"], name: "index_saved_organizations_on_user_and_org", unique: true
+    t.index ["user_id"], name: "index_saved_organizations_on_user_id"
   end
 
   create_table "service_applications", force: :cascade do |t|
@@ -120,6 +130,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_004629) do
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "saved_organizations", "organizations"
+  add_foreign_key "saved_organizations", "users"
   add_foreign_key "service_applications", "engagement_opportunities"
   add_foreign_key "service_applications", "users"
   add_foreign_key "user_intake_responses", "users"

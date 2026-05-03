@@ -38,6 +38,7 @@ Rails.application.routes.draw do
       end
       resources :applications, controller: "service_applications", only: [:update, :destroy]
       get "my/applications", to: "my_applications#index"
+      resources :saved_organizations, only: [:index, :create, :destroy]
     end
   end
 

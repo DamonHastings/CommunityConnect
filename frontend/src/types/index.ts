@@ -31,6 +31,7 @@ export interface User {
   organizations: UserOrganization[]
   created_at: string
   intake_completed?: boolean | null
+  saved_org_ids?: number[]
 }
 
 export type HousingStatus =

@@ -9,6 +9,8 @@ class User < ApplicationRecord
   has_many :organizations, through: :organization_memberships
   has_one :user_intake_response, dependent: :destroy
   has_many :service_applications, dependent: :destroy
+  has_many :saved_organizations, dependent: :destroy
+  has_many :saved_orgs, through: :saved_organizations, source: :organization
 
   enum :profile_type, {
     individual_seeker: 0,
