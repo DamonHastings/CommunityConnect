@@ -29,10 +29,11 @@ RSpec.describe EngagementOpportunity, type: :model do
     let!(:closed_vol)  { create(:engagement_opportunity, status: :closed, opportunity_type: :volunteer) }
     let!(:open_mentor) { create(:engagement_opportunity, status: :open,   opportunity_type: :mentorship) }
     let!(:past_opp)    { create(:engagement_opportunity, status: :open, opportunity_type: :funding, start_date: Date.current - 1.week) }
+    let!(:remote_opp)  { create(:engagement_opportunity, status: :open,   opportunity_type: :mentorship, remote: 'true') }
 
     describe ".open_opportunities" do
       it "returns only open opportunities" do
-        expect(EngagementOpportunity.open_opportunities).to contain_exactly(open_vol, open_mentor, past_opp)
+        expect(EngagementOpportunity.open_opportunities).to contain_exactly(open_vol, open_mentor, past_opp, remote_opp)
       end
     end
 
@@ -48,11 +49,17 @@ RSpec.describe EngagementOpportunity, type: :model do
 
     describe ".upcoming" do
       it "returns opportunities with a start_date on or after today" do
-        expect(EngagementOpportunity.upcoming).to contain_exactly(open_vol, closed_vol, open_mentor)
+        expect(EngagementOpportunity.upcoming).to contain_exactly(open_vol, closed_vol, open_mentor, remote_opp)
       end
 
       it "excludes past opportunities" do
         expect(EngagementOpportunity.upcoming).not_to include(past_opp)
+      end
+    end
+
+    describe ".remote"  do 
+      it "returns remote opportunities" do
+        expect(EngagementOpportunity.remote_only).to contain_exactly(remote_opp)
       end
     end
   end

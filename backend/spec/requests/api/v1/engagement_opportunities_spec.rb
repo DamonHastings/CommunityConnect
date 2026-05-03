@@ -11,22 +11,38 @@ RSpec.describe "Engagement Opportunities API", type: :request do
     let!(:vol_open)   { create(:engagement_opportunity, organization: org, opportunity_type: :volunteer, status: :open) }
     let!(:mentor_open){ create(:engagement_opportunity, organization: org, opportunity_type: :mentorship, status: :open) }
     let!(:vol_closed) { create(:engagement_opportunity, organization: org, opportunity_type: :volunteer, status: :closed) }
+    let!(:vol_closed_onsite) { create(:engagement_opportunity, organization: org, opportunity_type: :volunteer, status: :closed, remote: false) }
+    let!(:vol_closed_remote) { create(:engagement_opportunity, organization: org, opportunity_type: :volunteer, status: :closed, remote: true) }
 
     it "returns all opportunities with pagination meta" do
       get "/api/v1/opportunities"
       expect(response).to have_http_status(:ok)
-      expect(json[:opportunities].length).to eq(3)
+      expect(json[:opportunities].length).to eq(5)
       expect(json[:meta]).to include(:total_count, :current_page)
     end
 
     it "filters by type" do
       get "/api/v1/opportunities", params: { type: "volunteer" }
-      expect(json[:opportunities].length).to eq(2)
+      expect(json[:opportunities].length).to eq(4)
     end
 
     it "filters by status" do
       get "/api/v1/opportunities", params: { status: "open" }
       expect(json[:opportunities].length).to eq(2)
+    end
+
+    it "filters by remote" do
+      get "/api/v1/opportunities", params: { remote: "true" }
+      expect(json[:opportunities].length).to eq(1)
+    end
+
+    it "filters by onsite (remote: false)" do
+      get "/api/v1/opportunities", params: { remote: "false" }
+      expect(json[:opportunities].length).to eq(4)
+    end
+    it "does not filter by remote if not present" do
+      get "/api/v1/opportunities"
+      expect(json[:opportunities].length).to eq(5)
     end
   end
 

@@ -13,7 +13,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      get "auth/me", to: "auth/profiles#show"
+      get "auth/me", to: "auth/profiles#show" 
       patch "auth/me", to: "auth/profiles#update"
 
       get "intake", to: "intake_responses#show"
@@ -34,6 +34,7 @@ Rails.application.routes.draw do
 
       resources :opportunities, controller: "engagement_opportunities", only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "service_applications", only: [:index, :create]
+        get "upcoming", to: "engagement_opportunities#upcoming"
       end
       resources :applications, controller: "service_applications", only: [:update, :destroy]
       get "my/applications", to: "my_applications#index"

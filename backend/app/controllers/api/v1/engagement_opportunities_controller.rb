@@ -9,6 +9,10 @@ class Api::V1::EngagementOpportunitiesController < ApplicationController
       EngagementOpportunity.all
     end
 
+    if params.key?(:remote)
+      opportunities = opportunities.where(remote: ActiveModel::Type::Boolean.new.cast(params[:remote]))
+    end
+
     opportunities = opportunities.by_type(params[:type]) if params[:type].present?
     opportunities = opportunities.where(status: params[:status]) if params[:status].present?
 
@@ -66,6 +70,11 @@ class Api::V1::EngagementOpportunitiesController < ApplicationController
       :title, :description, :opportunity_type, :status,
       :remote, :start_date, :end_date, :requirements, :contact_email
     )
+  end
+
+  def upcoming
+    opportunities = EngagementOpportunity.upcoming
+    render json: { opportunities: serialize_collection(opportunities) }
   end
 
   def serialize(opp)
