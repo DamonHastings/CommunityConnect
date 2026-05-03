@@ -91,6 +91,8 @@ export function OrganizationProfilePage() {
   const { user } = useAuth()
   const { data: org, isLoading } = useOrganization(id!)
   const { data: oppsData } = useOrganizationOpportunities(id!)
+  const save = useSaveOrganization()
+  const unsave = useUnsaveOrganization()
 
   if (isLoading) {
     return (
@@ -106,8 +108,6 @@ export function OrganizationProfilePage() {
   const isAdmin = user?.organizations.some((m) => m.id === org.id && m.role === 'admin')
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
-  const save = useSaveOrganization()
-  const unsave = useUnsaveOrganization()
 
   return (
     <div className="space-y-6">
