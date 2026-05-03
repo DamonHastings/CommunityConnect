@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../lib/api'
+import { useAuth } from '../contexts/AuthContext'
 import type { Organization } from '../types'
 
 interface SavedOrgsResponse {
@@ -15,24 +16,32 @@ export function useSavedOrganizations() {
 
 export function useSaveOrganization() {
   const queryClient = useQueryClient()
+  const { updateUser } = useAuth()
   return useMutation({
     mutationFn: (organizationId: number) =>
       api.post('/saved_organizations', { organization_id: organizationId }).then((r) => r.data),
-    onSuccess: () => {
+    onSuccess: (_data, organizationId) => {
+      updateUser((u) => ({
+        ...u,
+        saved_org_ids: [...(u.saved_org_ids ?? []), organizationId],
+      }))
       queryClient.invalidateQueries({ queryKey: ['saved-organizations'] })
-      queryClient.invalidateQueries({ queryKey: ['me'] })
     },
   })
 }
 
 export function useUnsaveOrganization() {
   const queryClient = useQueryClient()
+  const { updateUser } = useAuth()
   return useMutation({
     mutationFn: (organizationId: number) =>
       api.delete(`/saved_organizations/${organizationId}`).then((r) => r.data),
-    onSuccess: () => {
+    onSuccess: (_data, organizationId) => {
+      updateUser((u) => ({
+        ...u,
+        saved_org_ids: (u.saved_org_ids ?? []).filter((id) => id !== organizationId),
+      }))
       queryClient.invalidateQueries({ queryKey: ['saved-organizations'] })
-      queryClient.invalidateQueries({ queryKey: ['me'] })
     },
   })
 }

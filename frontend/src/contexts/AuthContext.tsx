@@ -12,6 +12,7 @@ interface AuthContextValue {
   logout: () => Promise<void>
   updateProfile: (data: ProfileUpdateData) => Promise<void>
   submitIntake: (data: IntakeFormData) => Promise<void>
+  updateUser: (updater: (prev: User) => User) => void
 }
 
 interface RegisterData {
@@ -105,8 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchCurrentUser()
   }
 
+  const updateUser = (updater: (prev: User) => User) => {
+    setUser((prev) => (prev ? updater(prev) : null))
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateProfile, submitIntake }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateProfile, submitIntake, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
