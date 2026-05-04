@@ -6,6 +6,7 @@ import { useOrganizationPrograms } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
+import { useOrgConnections, useSendConnectionRequest, useUpdateConnectionRequest, useCancelConnectionRequest } from '../../hooks/usePartnerConnections'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -14,7 +15,7 @@ import { Input } from '../../components/ui/Input'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2 } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -156,6 +157,110 @@ function AnnouncementsPanel({ orgId, isAdmin }: { orgId: number; isAdmin: boolea
   )
 }
 
+function PartnerConnectionsPanel({ orgId, isAdmin }: { orgId: number; isAdmin: boolean }) {
+  const [open, setOpen] = useState(false)
+  const { data } = useOrgConnections(orgId)
+  const update = useUpdateConnectionRequest()
+  const cancel = useCancelConnectionRequest()
+
+  const connections = data?.partner_connections ?? []
+  const accepted = connections.filter((c) => c.status === 'accepted')
+  const pendingIncoming = connections.filter(
+    (c) => c.status === 'pending' && c.target_org.id === orgId
+  )
+  const pendingOutgoing = connections.filter(
+    (c) => c.status === 'pending' && c.requester_org.id === orgId
+  )
+
+  if (!isAdmin && accepted.length === 0) return null
+
+  return (
+    <div>
+      <button
+        className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+        <Handshake className="h-5 w-5 text-indigo-600" />
+        Partner Organizations
+        {accepted.length > 0 && <span className="text-sm font-normal text-gray-500">({accepted.length})</span>}
+      </button>
+
+      {open && (
+        <div className="space-y-3">
+          {accepted.length === 0 && !isAdmin && (
+            <p className="text-sm text-gray-500">No partner organizations yet.</p>
+          )}
+
+          {accepted.map((c) => {
+            const partner = c.requester_org.id === orgId ? c.target_org : c.requester_org
+            return (
+              <Card key={c.id}>
+                <CardBody className="flex items-center justify-between gap-3">
+                  <Link to={`/organizations/${partner.id}`} className="font-medium text-indigo-600 hover:underline">
+                    {partner.name}
+                  </Link>
+                  <Badge variant="success">Partner</Badge>
+                </CardBody>
+              </Card>
+            )
+          })}
+
+          {isAdmin && pendingIncoming.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-700">Incoming requests</p>
+              {pendingIncoming.map((c) => (
+                <Card key={c.id} className="mb-2">
+                  <CardBody className="flex items-start justify-between gap-3">
+                    <div>
+                      <Link to={`/organizations/${c.requester_org.id}`} className="font-medium text-indigo-600 hover:underline">
+                        {c.requester_org.name}
+                      </Link>
+                      {c.message && <p className="mt-0.5 text-sm text-gray-600">{c.message}</p>}
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button size="sm" variant="outline" disabled={update.isPending}
+                        onClick={() => update.mutate({ id: c.id, status: 'accepted' })}>
+                        Accept
+                      </Button>
+                      <Button size="sm" variant="outline" disabled={update.isPending}
+                        onClick={() => update.mutate({ id: c.id, status: 'declined' })}>
+                        Decline
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {isAdmin && pendingOutgoing.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-700">Sent requests</p>
+              {pendingOutgoing.map((c) => (
+                <Card key={c.id} className="mb-2">
+                  <CardBody className="flex items-center justify-between gap-3">
+                    <div>
+                      <Link to={`/organizations/${c.target_org.id}`} className="font-medium text-indigo-600 hover:underline">
+                        {c.target_org.name}
+                      </Link>
+                      <Badge variant="warning" className="ml-2">Pending</Badge>
+                    </div>
+                    <Button size="sm" variant="outline" disabled={cancel.isPending}
+                      onClick={() => cancel.mutate(c.id)}>
+                      Cancel
+                    </Button>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function OrganizationProfilePage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
@@ -165,6 +270,11 @@ export function OrganizationProfilePage() {
   const save = useSaveOrganization()
   const unsave = useUnsaveOrganization()
   const updateOrg = useUpdateOrganization(id!)
+
+  // Find an org the viewer admins (other than the viewed org) for partnership request
+  const viewerAdminOrg = user?.organizations.find((m) => m.role === 'admin' && m.id !== Number(id))
+  const { data: connectionsData } = useOrgConnections(viewerAdminOrg?.id ?? 0)
+  const sendRequest = useSendConnectionRequest(viewerAdminOrg?.id ?? 0)
 
   if (isLoading) {
     return (
@@ -181,6 +291,10 @@ export function OrganizationProfilePage() {
   const isPlatformAdmin = user?.platform_admin ?? false
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
+
+  const existingConnection = connectionsData?.partner_connections.find(
+    (c) => c.requester_org.id === org.id || c.target_org.id === org.id
+  )
 
   return (
     <div className="space-y-6">
@@ -229,6 +343,22 @@ export function OrganizationProfilePage() {
               {isSaved ? 'Saved' : 'Save'}
             </Button>
           )}
+          {viewerAdminOrg && !existingConnection && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={sendRequest.isPending}
+              onClick={() => sendRequest.mutate({ target_org_id: org.id })}
+            >
+              <Handshake className="mr-1.5 h-4 w-4" />
+              Request Partnership
+            </Button>
+          )}
+          {viewerAdminOrg && existingConnection && (
+            <Badge variant={existingConnection.status === 'accepted' ? 'success' : existingConnection.status === 'declined' ? 'error' : 'warning'}>
+              {existingConnection.status === 'accepted' ? 'Partners' : existingConnection.status === 'declined' ? 'Declined' : 'Partnership Pending'}
+            </Badge>
+          )}
           {isAdmin && (
             <Link to={`/organizations/${org.id}/edit`}>
               <Button variant="outline" size="sm">
@@ -261,6 +391,8 @@ export function OrganizationProfilePage() {
           )}
 
           <AnnouncementsPanel orgId={org.id} isAdmin={!!isAdmin} />
+
+          <PartnerConnectionsPanel orgId={org.id} isAdmin={!!isAdmin} />
 
           <div>
             <div className="mb-4 flex items-center justify-between">

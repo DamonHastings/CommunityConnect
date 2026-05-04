@@ -227,6 +227,15 @@ export interface Announcement {
   created_at: string
 }
 
+export interface PartnerConnection {
+  id: number
+  status: 'pending' | 'accepted' | 'declined'
+  message: string | null
+  requester_org: { id: number; name: string }
+  target_org: { id: number; name: string }
+  created_at: string
+}
+
 export interface ApiError {
   error?: string
   errors?: string[]

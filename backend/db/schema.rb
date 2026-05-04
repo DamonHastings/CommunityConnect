@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_080100) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_212229) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_080100) do
     t.string "zip"
     t.index ["featured"], name: "index_organizations_on_featured"
     t.index ["org_type"], name: "index_organizations_on_org_type"
+  end
+
+  create_table "partner_connections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "message"
+    t.bigint "requester_org_id", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "target_org_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["requester_org_id", "target_org_id"], name: "idx_on_requester_org_id_target_org_id_90f2d59357", unique: true
+    t.index ["requester_org_id"], name: "index_partner_connections_on_requester_org_id"
+    t.index ["target_org_id"], name: "index_partner_connections_on_target_org_id"
   end
 
   create_table "program_applications", force: :cascade do |t|
@@ -186,6 +198,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_080100) do
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "partner_connections", "organizations", column: "requester_org_id"
+  add_foreign_key "partner_connections", "organizations", column: "target_org_id"
   add_foreign_key "program_applications", "programs"
   add_foreign_key "program_applications", "users"
   add_foreign_key "programs", "organizations"
