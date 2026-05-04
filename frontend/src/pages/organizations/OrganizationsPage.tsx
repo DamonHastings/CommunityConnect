@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useOrganizations } from '../../hooks/useOrganizations'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { Input } from '../../components/ui/Input'
@@ -22,9 +22,10 @@ const ORG_TYPE_OPTIONS = [
 
 export function OrganizationsPage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [q, setQ] = useState('')
   const [category, setCategory] = useState('')
-  const [orgType, setOrgType] = useState('')
+  const [orgType, setOrgType] = useState(searchParams.get('type') ?? '')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [page, setPage] = useState(1)

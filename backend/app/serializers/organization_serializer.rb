@@ -12,4 +12,9 @@ class OrganizationSerializer
   attribute :open_opportunity_count do |org|
     org.engagement_opportunities.open_opportunities.count
   end
+
+  attribute :primary_admin do |org|
+    admin = org.organization_memberships.admin.includes(:user).first
+    admin ? { id: admin.user_id, name: admin.user.full_name } : nil
+  end
 end

@@ -164,33 +164,47 @@ export function OpportunityDetailPage() {
               ) : canApply ? (
                 applyOpen ? (
                   <div className="space-y-3">
-                    <h2 className="font-semibold text-gray-900">Apply to this opportunity</h2>
-                    <textarea
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      rows={3}
-                      placeholder="Optional: introduce yourself or explain why you're interested…"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                    {isFunding && user && user.organizations.length > 0 && (
+                    <h2 className="font-semibold text-gray-900">
+                      {isFunding ? 'Submit a Grant Application' : 'Apply to this opportunity'}
+                    </h2>
+                    {isFunding && (
+                      <p className="text-sm text-gray-500">
+                        Your application will be reviewed by the funding organization. Select the organization you are applying on behalf of.
+                      </p>
+                    )}
+                    {isFunding && user.organizations.length > 0 ? (
                       <Select
-                        label="Applying on behalf of organization (optional)"
+                        label="Applying organization (required for grants)"
                         options={[
-                          { value: '', label: 'As an individual' },
+                          { value: '', label: 'Select an organization…' },
                           ...user.organizations.map((o) => ({ value: String(o.id), label: o.name })),
                         ]}
                         value={applicantOrgId}
                         onChange={(e) => setApplicantOrgId(e.target.value)}
                       />
-                    )}
+                    ) : isFunding ? (
+                      <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                        You must belong to an organization to apply for grant funding.
+                      </p>
+                    ) : null}
+                    <textarea
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      rows={3}
+                      placeholder={isFunding ? 'Describe your organization\'s project and how this funding will be used…' : 'Optional: introduce yourself or explain why you\'re interested…'}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
                     {apply.error && (
                       <p className="text-sm text-red-600">
                         {(apply.error as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors?.[0] ?? 'Something went wrong'}
                       </p>
                     )}
                     <div className="flex gap-2">
-                      <Button onClick={handleApply} disabled={apply.isPending}>
-                        {apply.isPending ? 'Submitting…' : 'Submit Application'}
+                      <Button
+                        onClick={handleApply}
+                        disabled={apply.isPending || (isFunding && user.organizations.length > 0 && !applicantOrgId)}
+                      >
+                        {apply.isPending ? 'Submitting…' : isFunding ? 'Submit Grant Application' : 'Submit Application'}
                       </Button>
                       <Button variant="outline" onClick={() => setApplyOpen(false)}>
                         Cancel
@@ -198,7 +212,9 @@ export function OpportunityDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  <Button onClick={() => setApplyOpen(true)}>Apply to this opportunity</Button>
+                  <Button onClick={() => setApplyOpen(true)}>
+                    {isFunding ? 'Apply for Funding' : 'Apply to this opportunity'}
+                  </Button>
                 )
               ) : null}
             </div>

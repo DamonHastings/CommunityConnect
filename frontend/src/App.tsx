@@ -8,6 +8,7 @@ import { RegisterPage } from './pages/auth/RegisterPage'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage'
 import { OrganizationProfilePage } from './pages/organizations/OrganizationProfilePage'
 import { OrganizationFormPage } from './pages/organizations/OrganizationFormPage'
+import { OrganizationManagePage } from './pages/organizations/OrganizationManagePage'
 import { OpportunitiesPage } from './pages/opportunities/OpportunitiesPage'
 import { OpportunityDetailPage } from './pages/opportunities/OpportunityDetailPage'
 import { OpportunityFormPage } from './pages/opportunities/OpportunityFormPage'
@@ -69,6 +70,7 @@ function AppRoutes() {
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/organizations/new" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/edit" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
+        <Route path="/organizations/:id/manage" element={<RequireAuth><OrganizationManagePage /></RequireAuth>} />
         <Route path="/organizations/:id/opportunities/new" element={<RequireAuth><OpportunityFormPage /></RequireAuth>} />
         <Route path="/organizations/:orgId/programs/new" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />
         <Route path="/programs/:id/edit" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useOrganization, useUpdateOrganization } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
 import { useOrganizationPrograms } from '../../hooks/usePrograms'
@@ -8,6 +8,7 @@ import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSaved
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useOrgConnections, useSendConnectionRequest, useUpdateConnectionRequest, useCancelConnectionRequest } from '../../hooks/usePartnerConnections'
 import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
+import { useStartConversation } from '../../hooks/useMessages'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -16,7 +17,7 @@ import { Input } from '../../components/ui/Input'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -345,17 +346,26 @@ function PartnerConnectionsPanel({ orgId, isAdmin }: { orgId: number; isAdmin: b
 export function OrganizationProfilePage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { data: org, isLoading } = useOrganization(id!)
   const { data: oppsData } = useOrganizationOpportunities(id!)
   const { data: programsData } = useOrganizationPrograms(id!)
   const save = useSaveOrganization()
   const unsave = useUnsaveOrganization()
   const updateOrg = useUpdateOrganization(id!)
+  const startConversation = useStartConversation()
 
   // Find an org the viewer admins (other than the viewed org) for partnership request
   const viewerAdminOrg = user?.organizations.find((m) => m.role === 'admin' && m.id !== Number(id))
   const { data: connectionsData } = useOrgConnections(viewerAdminOrg?.id ?? 0)
   const sendRequest = useSendConnectionRequest(viewerAdminOrg?.id ?? 0)
+
+  const handleMessageOrg = () => {
+    if (!org?.primary_admin) return
+    startConversation.mutate(org.primary_admin.id, {
+      onSuccess: (conv) => navigate(`/messages/${conv.id}`),
+    })
+  }
 
   if (isLoading) {
     return (
@@ -369,6 +379,8 @@ export function OrganizationProfilePage() {
   if (!org) return <div className="py-16 text-center text-gray-500">Organization not found.</div>
 
   const isAdmin = user?.organizations.some((m) => m.id === org.id && m.role === 'admin')
+  const isMemberNavigator = user?.profile_type === 'resource_navigator' && user?.organizations.some((m) => m.id === org.id)
+  const canSendReferrals = isAdmin || isMemberNavigator
   const isPlatformAdmin = user?.platform_admin ?? false
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
@@ -424,6 +436,17 @@ export function OrganizationProfilePage() {
               {isSaved ? 'Saved' : 'Save'}
             </Button>
           )}
+          {user && !isAdmin && org.primary_admin && user.id !== org.primary_admin.id && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={startConversation.isPending}
+              onClick={handleMessageOrg}
+            >
+              <MessageSquare className="mr-1.5 h-4 w-4" />
+              Message
+            </Button>
+          )}
           {viewerAdminOrg && !existingConnection && (
             <Button
               variant="outline"
@@ -441,12 +464,19 @@ export function OrganizationProfilePage() {
             </Badge>
           )}
           {isAdmin && (
-            <Link to={`/organizations/${org.id}/edit`}>
-              <Button variant="outline" size="sm">
-                <Pencil className="mr-1.5 h-4 w-4" />
-                Edit
-              </Button>
-            </Link>
+            <>
+              <Link to={`/organizations/${org.id}/manage`}>
+                <Button size="sm">
+                  Manage org →
+                </Button>
+              </Link>
+              <Link to={`/organizations/${org.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Pencil className="mr-1.5 h-4 w-4" />
+                  Edit
+                </Button>
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -475,7 +505,7 @@ export function OrganizationProfilePage() {
 
           <PartnerConnectionsPanel orgId={org.id} isAdmin={!!isAdmin} />
 
-          {isAdmin && <ReferralsPanel orgId={org.id} />}
+          {canSendReferrals && <ReferralsPanel orgId={org.id} />}
 
           <div>
             <div className="mb-4 flex items-center justify-between">

@@ -77,7 +77,7 @@ export interface IntakeFormData {
   preferred_contact: string
 }
 
-export type OrgType = 'nonprofit' | 'business' | 'school'
+export type OrgType = 'nonprofit' | 'business' | 'school' | 'foundation'
 
 export interface Organization {
   id: number
@@ -101,6 +101,7 @@ export interface Organization {
   verified: boolean
   member_count: number
   open_opportunity_count: number
+  primary_admin: { id: number; name: string } | null
   created_at: string
 }
 

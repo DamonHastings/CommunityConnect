@@ -34,7 +34,8 @@ class Organization < ApplicationRecord
   enum :org_type, {
     nonprofit: 0,
     business: 1,
-    school: 2
+    school: 2,
+    foundation: 3
   }
 
   validates :name, presence: true

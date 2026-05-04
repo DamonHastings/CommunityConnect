@@ -105,12 +105,14 @@ export const ORG_TYPE_LABELS: Record<string, string> = {
   nonprofit: 'Nonprofit',
   business: 'Business',
   school: 'School / Institution',
+  foundation: 'Foundation / Funder',
 }
 
 export const ORG_TYPE_OPTIONS = [
   { value: 'nonprofit', label: 'Nonprofit / Community Org' },
   { value: 'business', label: 'Business / Service Provider' },
   { value: 'school', label: 'School / Institution' },
+  { value: 'foundation', label: 'Foundation / Funder' },
 ]
 
 export const SPECIALTY_OPTIONS = [
