@@ -1,6 +1,7 @@
 class ServiceApplication < ApplicationRecord
   belongs_to :user
   belongs_to :engagement_opportunity
+  belongs_to :applicant_org, class_name: "Organization", optional: true
 
   enum :status, { pending: 0, approved: 1, rejected: 2, withdrawn: 3 }
 

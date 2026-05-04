@@ -46,6 +46,9 @@ function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
                 <div>
                   <p className="font-medium text-gray-900">{app.applicant.name}</p>
                   <p className="text-gray-500">{app.applicant.email}</p>
+                  {app.applicant_org && (
+                    <p className="text-xs text-indigo-600">on behalf of {app.applicant_org.name}</p>
+                  )}
                   {app.message && <p className="mt-1 text-gray-600 line-clamp-2">{app.message}</p>}
                   <p className="mt-1 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
                 </div>

@@ -121,6 +121,7 @@ export interface ServiceApplication {
   message: string | null
   notes: string | null
   applicant: { id: number; name: string; email: string }
+  applicant_org: { id: number; name: string } | null
   opportunity: {
     id: number
     title: string
@@ -141,6 +142,8 @@ export interface EngagementOpportunity {
   end_date: string | null
   requirements: string | null
   contact_email: string | null
+  funding_amount: number | null
+  eligibility: string | null
   organization: { id: number; name: string }
   created_at: string
   my_application?: { id: number; status: ApplicationStatus } | null

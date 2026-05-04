@@ -5,12 +5,16 @@ class Api::V1::ServiceApplicationsController < ApplicationController
 
   def index
     authorize @opportunity, :view_applications?
-    apps = @opportunity.service_applications.includes(:user).order(created_at: :desc)
+    apps = @opportunity.service_applications.includes(:user, :applicant_org).order(created_at: :desc)
     render json: { applications: apps.map { |a| serialize(a) } }
   end
 
   def create
-    app = @opportunity.service_applications.build(user: current_user, message: application_params[:message])
+    app = @opportunity.service_applications.build(
+      user: current_user,
+      message: application_params[:message],
+      applicant_org_id: application_params[:applicant_org_id]
+    )
     authorize app
     if app.save
       render json: { application: serialize(app) }, status: :created
@@ -38,7 +42,7 @@ class Api::V1::ServiceApplicationsController < ApplicationController
 
   def set_opportunity = @opportunity = EngagementOpportunity.find(params[:opportunity_id])
   def set_application = @application = ServiceApplication.find(params[:id])
-  def application_params = params.require(:application).permit(:message)
+  def application_params = params.require(:application).permit(:message, :applicant_org_id)
   def update_params = params.require(:application).permit(:status, :notes)
   def serialize(app) = ServiceApplicationSerializer.new(app).serializable_hash[:data][:attributes]
 end

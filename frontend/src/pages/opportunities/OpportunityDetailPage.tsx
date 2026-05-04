@@ -7,7 +7,8 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OPPORTUNITY_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { Calendar, MapPin, Mail, Building2, ArrowLeft, CheckCircle, XCircle, Clock, Undo2 } from 'lucide-react'
+import { Select } from '../../components/ui/Select'
+import { Calendar, MapPin, Mail, Building2, ArrowLeft, CheckCircle, XCircle, Clock, Undo2, DollarSign } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
 const STATUS_VARIANTS = {
@@ -29,6 +30,7 @@ export function OpportunityDetailPage() {
   const { data: opp, isLoading } = useOpportunity(id!)
   const [message, setMessage] = useState('')
   const [applyOpen, setApplyOpen] = useState(false)
+  const [applicantOrgId, setApplicantOrgId] = useState('')
 
   const apply = useApply(Number(id))
   const withdraw = useWithdrawApplication()
@@ -41,14 +43,19 @@ export function OpportunityDetailPage() {
 
   const myApp = opp.my_application
   const canApply = user && opp.status === 'open' && !myApp
+  const isFunding = opp.opportunity_type === 'funding'
 
   const handleApply = () => {
-    apply.mutate(message, {
-      onSuccess: () => {
-        setApplyOpen(false)
-        setMessage('')
-      },
-    })
+    apply.mutate(
+      { message, applicant_org_id: applicantOrgId ? Number(applicantOrgId) : undefined },
+      {
+        onSuccess: () => {
+          setApplyOpen(false)
+          setMessage('')
+          setApplicantOrgId('')
+        },
+      }
+    )
   }
 
   const handleWithdraw = () => {
@@ -115,6 +122,23 @@ export function OpportunityDetailPage() {
             </div>
           )}
 
+          {isFunding && (opp.funding_amount || opp.eligibility) && (
+            <div className="rounded-lg bg-amber-50 px-4 py-3 space-y-2 ring-1 ring-amber-200">
+              {opp.funding_amount && (
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-900">
+                  <DollarSign className="h-4 w-4" />
+                  Funding amount: ${Number(opp.funding_amount).toLocaleString()}
+                </div>
+              )}
+              {opp.eligibility && (
+                <div>
+                  <p className="text-sm font-medium text-amber-900">Eligibility</p>
+                  <p className="text-sm text-amber-800 whitespace-pre-line">{opp.eligibility}</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Application section */}
           {user && (
             <div className="border-t pt-4">
@@ -148,6 +172,17 @@ export function OpportunityDetailPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
+                    {isFunding && user && user.organizations.length > 0 && (
+                      <Select
+                        label="Applying on behalf of organization (optional)"
+                        options={[
+                          { value: '', label: 'As an individual' },
+                          ...user.organizations.map((o) => ({ value: String(o.id), label: o.name })),
+                        ]}
+                        value={applicantOrgId}
+                        onChange={(e) => setApplicantOrgId(e.target.value)}
+                      />
+                    )}
                     {apply.error && (
                       <p className="text-sm text-red-600">
                         {(apply.error as { response?: { data?: { errors?: string[] } } })?.response?.data?.errors?.[0] ?? 'Something went wrong'}

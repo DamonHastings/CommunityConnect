@@ -11,4 +11,8 @@ class ServiceApplicationSerializer
     opp = app.engagement_opportunity
     { id: opp.id, title: opp.title, organization: { id: opp.organization_id, name: opp.organization.name } }
   end
+
+  attribute :applicant_org do |app|
+    app.applicant_org ? { id: app.applicant_org_id, name: app.applicant_org.name } : nil
+  end
 end

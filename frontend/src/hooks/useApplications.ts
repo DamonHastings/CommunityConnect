@@ -25,9 +25,9 @@ export function useOpportunityApplications(opportunityId: number | undefined) {
 export function useApply(opportunityId: number) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (message: string) =>
+    mutationFn: ({ message, applicant_org_id }: { message?: string; applicant_org_id?: number }) =>
       api.post<{ application: ServiceApplication }>(`/opportunities/${opportunityId}/applications`, {
-        application: { message },
+        application: { message, applicant_org_id },
       }).then((r) => r.data.application),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', String(opportunityId)] })

@@ -68,7 +68,8 @@ class Api::V1::EngagementOpportunitiesController < ApplicationController
   def opportunity_params
     params.require(:opportunity).permit(
       :title, :description, :opportunity_type, :status,
-      :remote, :start_date, :end_date, :requirements, :contact_email
+      :remote, :start_date, :end_date, :requirements, :contact_email,
+      :funding_amount, :eligibility
     )
   end
 

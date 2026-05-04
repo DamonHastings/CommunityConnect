@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_214724) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,7 +29,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
     t.string "contact_email"
     t.datetime "created_at", null: false
     t.text "description"
+    t.text "eligibility"
     t.date "end_date"
+    t.decimal "funding_amount", precision: 12, scale: 2
     t.integer "opportunity_type"
     t.bigint "organization_id", null: false
     t.boolean "remote"
@@ -149,6 +151,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
   end
 
   create_table "service_applications", force: :cascade do |t|
+    t.bigint "applicant_org_id"
     t.datetime "created_at", null: false
     t.bigint "engagement_opportunity_id", null: false
     t.text "message"
@@ -156,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["applicant_org_id"], name: "index_service_applications_on_applicant_org_id"
     t.index ["engagement_opportunity_id"], name: "index_service_applications_on_engagement_opportunity_id"
     t.index ["user_id", "engagement_opportunity_id"], name: "index_service_applications_on_user_and_opportunity", unique: true
     t.index ["user_id"], name: "index_service_applications_on_user_id"
@@ -219,6 +223,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
   add_foreign_key "saved_organizations", "organizations"
   add_foreign_key "saved_organizations", "users"
   add_foreign_key "service_applications", "engagement_opportunities"
+  add_foreign_key "service_applications", "organizations", column: "applicant_org_id"
   add_foreign_key "service_applications", "users"
   add_foreign_key "user_intake_responses", "users"
 end

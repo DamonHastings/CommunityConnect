@@ -20,6 +20,8 @@ const schema = z.object({
   end_date: z.string().optional(),
   requirements: z.string().optional(),
   contact_email: z.string().email('Invalid email').optional().or(z.literal('')),
+  funding_amount: z.string().optional(),
+  eligibility: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -37,10 +39,11 @@ export function OpportunityFormPage() {
   const [serverErrors, setServerErrors] = useState<string[]>([])
   const createMutation = useCreateOpportunity(orgId!)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, watch, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { status: 'open', remote: false },
   })
+  const watchedType = watch('opportunity_type')
 
   const onSubmit = async (data: FormData) => {
     setServerErrors([])
@@ -103,6 +106,27 @@ export function OpportunityFormPage() {
                 {...register('requirements')}
               />
             </div>
+
+            {watchedType === 'funding' && (
+              <>
+                <Input
+                  label="Funding amount (USD)"
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 5000"
+                  {...register('funding_amount')}
+                />
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Eligibility</label>
+                  <textarea
+                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    rows={3}
+                    placeholder="Who is eligible to apply for this funding?"
+                    {...register('eligibility')}
+                  />
+                </div>
+              </>
+            )}
           </CardBody>
         </Card>
 
