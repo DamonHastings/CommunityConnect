@@ -39,6 +39,7 @@ Rails.application.routes.draw do
 
       resources :programs, only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "program_applications", only: [:index, :create]
+        resources :organizations, controller: "program_organizations", only: [:index, :create, :destroy]
       end
       resources :program_applications, only: [:update, :destroy]
       get "my/program_applications", to: "my_program_applications#index"

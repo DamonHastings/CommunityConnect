@@ -1,6 +1,10 @@
 class Program < ApplicationRecord
   belongs_to :organization
   has_many :program_applications, dependent: :destroy
+  has_many :program_organizations, dependent: :destroy
+  has_many :co_organizations, through: :program_organizations, source: :organization
+
+  after_create :create_owner_program_organization
 
   enum :program_type, {
     mentorship: 0,
@@ -38,6 +42,10 @@ class Program < ApplicationRecord
   end
 
   private
+
+  def create_owner_program_organization
+    program_organizations.find_or_create_by!(organization: organization, role: :owner)
+  end
 
   def end_date_after_start_date
     return if ends_on.blank? || starts_on.blank?

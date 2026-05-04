@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useProgram } from '../../hooks/usePrograms'
 import { useApplyToProgram, useWithdrawProgramApplication, useProgramApplications, useUpdateProgramApplication } from '../../hooks/useProgramApplications'
+import { useAddProgramOrganization, useRemoveProgramOrganization } from '../../hooks/useProgramOrganizations'
+import { useOrganizations } from '../../hooks/useOrganizations'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Select'
 import { PROGRAM_TYPE_LABELS, PROGRAM_STATUS_LABELS, formatDate } from '../../lib/utils'
-import { Calendar, MapPin, Mail, Building2, ArrowLeft, Users, Pencil, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Undo2 } from 'lucide-react'
+import { Calendar, MapPin, Mail, Building2, ArrowLeft, Users, Pencil, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Undo2, X } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
 const STATUS_VARIANTS: Record<string, 'warning' | 'info' | 'success' | 'default' | 'error'> = {
@@ -78,6 +81,67 @@ function AdminApplicationsPanel({ programId }: { programId: number }) {
   )
 }
 
+function CoOwnersPanel({ programId, coOrgs }: { programId: number; coOrgs: Array<{ id: number; name: string; role: string }> }) {
+  const [open, setOpen] = useState(false)
+  const [selectedOrgId, setSelectedOrgId] = useState('')
+  const { data: orgsData } = useOrganizations({})
+  const add = useAddProgramOrganization(programId)
+  const remove = useRemoveProgramOrganization(programId)
+
+  const existingIds = new Set(coOrgs.map((o) => o.id))
+  const available = orgsData?.organizations.filter((o) => !existingIds.has(o.id)) ?? []
+
+  return (
+    <div className="border-t pt-4">
+      <button
+        className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        Co-owner Organizations ({coOrgs.length})
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {coOrgs.map((org) => (
+            <div key={org.id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+              <div className="flex items-center gap-2">
+                <Link to={`/organizations/${org.id}`} className="font-medium text-indigo-600 hover:underline">{org.name}</Link>
+                <Badge variant={org.role === 'owner' ? 'success' : 'default'}>{org.role}</Badge>
+              </div>
+              {org.role !== 'owner' && (
+                <button onClick={() => remove.mutate(org.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+
+          <div className="flex gap-2 pt-1">
+            <Select
+              className="flex-1"
+              options={[{ value: '', label: 'Add co-owner org…' }, ...available.map((o) => ({ value: String(o.id), label: o.name }))]}
+              value={selectedOrgId}
+              onChange={(e) => setSelectedOrgId(e.target.value)}
+            />
+            <Button
+              size="sm"
+              disabled={!selectedOrgId || add.isPending}
+              onClick={() => {
+                add.mutate({ organization_id: Number(selectedOrgId), role: 'partner' }, {
+                  onSuccess: () => setSelectedOrgId(''),
+                })
+              }}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ProgramDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
@@ -91,7 +155,8 @@ export function ProgramDetailPage() {
   if (isLoading) return <div className="h-48 animate-pulse rounded-xl bg-gray-200" />
   if (!program) return <div className="py-16 text-center text-gray-500">Program not found.</div>
 
-  const isAdmin = user?.organizations.some((m) => m.id === program.organization.id && m.role === 'admin')
+  const coOrgs = program.organizations ?? [{ id: program.organization.id, name: program.organization.name, role: 'owner' }]
+  const isAdmin = user?.organizations.some((m) => coOrgs.some((o) => o.id === m.id) && m.role === 'admin')
   const myApp = program.my_application
   const canApply = user && program.applications_open && !myApp && !isAdmin
 
@@ -137,9 +202,20 @@ export function ProgramDetailPage() {
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <Building2 className="h-4 w-4 text-gray-400" />
-              <Link to={`/organizations/${program.organization.id}`} className="text-indigo-600 hover:underline">
-                {program.organization.name}
-              </Link>
+              {coOrgs.length > 1 ? (
+                <span className="flex flex-wrap gap-1">
+                  {coOrgs.map((org, i) => (
+                    <span key={org.id}>
+                      <Link to={`/organizations/${org.id}`} className="text-indigo-600 hover:underline">{org.name}</Link>
+                      {i < coOrgs.length - 1 && <span className="text-gray-400"> + </span>}
+                    </span>
+                  ))}
+                </span>
+              ) : (
+                <Link to={`/organizations/${program.organization.id}`} className="text-indigo-600 hover:underline">
+                  {program.organization.name}
+                </Link>
+              )}
             </span>
             {program.remote ? (
               <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-gray-400" />Remote</span>
@@ -242,7 +318,8 @@ export function ProgramDetailPage() {
             </div>
           )}
 
-          {/* Admin applications panel */}
+          {/* Admin panels */}
+          {isAdmin && <CoOwnersPanel programId={Number(id)} coOrgs={coOrgs} />}
           {isAdmin && <AdminApplicationsPanel programId={Number(id)} />}
         </CardBody>
       </Card>

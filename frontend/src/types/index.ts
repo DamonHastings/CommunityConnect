@@ -182,6 +182,12 @@ export type ProgramType =
 
 export type ProgramStatus = 'draft' | 'published' | 'active' | 'completed' | 'cancelled'
 
+export interface ProgramOrganization {
+  id: number
+  name: string
+  role: 'owner' | 'partner'
+}
+
 export interface Program {
   id: number
   title: string
@@ -199,6 +205,7 @@ export interface Program {
   ends_on: string | null
   contact_email: string | null
   organization: { id: number; name: string }
+  organizations?: ProgramOrganization[]
   applications_open: boolean
   my_application?: { id: number; status: ApplicationStatus } | null
   created_at: string

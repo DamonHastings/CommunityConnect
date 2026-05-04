@@ -4,10 +4,16 @@ class ProgramPolicy < ApplicationPolicy
   end
 
   def update?
-    user.present? && user.member_of?(record.organization)
+    user.present? && co_orgs.any? { |org| user.member_of?(org) }
   end
 
   def destroy?
-    user.present? && user.admin_of?(record.organization)
+    user.present? && co_orgs.any? { |org| user.admin_of?(org) }
+  end
+
+  private
+
+  def co_orgs
+    [record.organization] + record.co_organizations.to_a
   end
 end

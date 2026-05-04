@@ -14,7 +14,7 @@ class Api::V1::ProgramsController < ApplicationController
     programs = programs.by_type(params[:type]) if params[:type].present?
     programs = programs.where(remote: ActiveModel::Type::Boolean.new.cast(params[:remote])) if params.key?(:remote)
 
-    programs = programs.includes(:organization)
+    programs = programs.includes(:organization, program_organizations: :organization)
       .order(created_at: :desc)
       .page(params[:page])
       .per(params[:per_page] || 20)
@@ -63,7 +63,7 @@ class Api::V1::ProgramsController < ApplicationController
   private
 
   def set_program
-    @program = Program.find(params[:id])
+    @program = Program.includes(program_organizations: :organization).find(params[:id])
   end
 
   def program_params

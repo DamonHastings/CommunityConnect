@@ -10,6 +10,12 @@ class ProgramSerializer
     { id: p.organization_id, name: p.organization.name }
   end
 
+  attribute :organizations do |p|
+    p.program_organizations.includes(:organization).map do |po|
+      { id: po.organization_id, name: po.organization.name, role: po.role }
+    end
+  end
+
   attribute :applications_open do |p|
     p.applications_open?
   end

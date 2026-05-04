@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_212229) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_213140) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_212229) do
     t.index ["program_id"], name: "index_program_applications_on_program_id"
     t.index ["user_id", "program_id"], name: "index_program_applications_on_user_id_and_program_id", unique: true
     t.index ["user_id"], name: "index_program_applications_on_user_id"
+  end
+
+  create_table "program_organizations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "program_id", null: false
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_program_organizations_on_organization_id"
+    t.index ["program_id", "organization_id"], name: "index_program_organizations_on_program_id_and_organization_id", unique: true
+    t.index ["program_id"], name: "index_program_organizations_on_program_id"
   end
 
   create_table "programs", force: :cascade do |t|
@@ -202,6 +213,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_212229) do
   add_foreign_key "partner_connections", "organizations", column: "target_org_id"
   add_foreign_key "program_applications", "programs"
   add_foreign_key "program_applications", "users"
+  add_foreign_key "program_organizations", "organizations"
+  add_foreign_key "program_organizations", "programs"
   add_foreign_key "programs", "organizations"
   add_foreign_key "saved_organizations", "organizations"
   add_foreign_key "saved_organizations", "users"

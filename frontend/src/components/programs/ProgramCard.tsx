@@ -47,7 +47,9 @@ export function ProgramCard({ program, showOrg = true }: ProgramCardProps) {
             {showOrg && (
               <span className="flex items-center gap-1">
                 <Building2 className="h-3 w-3" />
-                {program.organization.name}
+                {program.organizations && program.organizations.length > 1
+                  ? `${program.organizations[0].name} + ${program.organizations.length - 1} more`
+                  : program.organization.name}
               </span>
             )}
             {program.remote ? (
