@@ -29,7 +29,7 @@ class Api::V1::ProgramsController < ApplicationController
     if @program.draft? && !current_user&.member_of?(@program.organization)
       return render json: { error: "Not found" }, status: :not_found
     end
-    render json: { program: serialize(@program) }
+    render json: { program: serialize_with_user(@program) }
   end
 
   def create
@@ -77,6 +77,10 @@ class Api::V1::ProgramsController < ApplicationController
 
   def serialize(program)
     ProgramSerializer.new(program).serializable_hash[:data][:attributes]
+  end
+
+  def serialize_with_user(program)
+    ProgramSerializer.new(program, params: { current_user: current_user }).serializable_hash[:data][:attributes]
   end
 
   def serialize_collection(programs)

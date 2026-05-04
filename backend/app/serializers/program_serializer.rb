@@ -13,4 +13,10 @@ class ProgramSerializer
   attribute :applications_open do |p|
     p.applications_open?
   end
+
+  attribute :my_application do |p, params|
+    next nil unless params[:current_user]
+    app = p.program_applications.find_by(user_id: params[:current_user].id)
+    app ? { id: app.id, status: app.status } : nil
+  end
 end

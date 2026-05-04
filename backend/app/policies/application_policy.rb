@@ -8,7 +8,7 @@ class ApplicationPolicy
 
   def index? = true
   def show? = true
-  def create? = user.present?
+  def create? = user.present? && user.admin?
   def update? = false
   def destroy? = false
 

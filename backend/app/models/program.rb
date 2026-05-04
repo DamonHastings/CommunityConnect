@@ -1,5 +1,6 @@
 class Program < ApplicationRecord
   belongs_to :organization
+  has_many :program_applications, dependent: :destroy
 
   enum :program_type, {
     mentorship: 0,

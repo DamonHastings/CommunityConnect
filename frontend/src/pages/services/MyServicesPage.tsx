@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyApplications, useWithdrawApplication } from '../../hooks/useApplications'
+import { useMyProgramApplications, useWithdrawProgramApplication } from '../../hooks/useProgramApplications'
 import { useSavedOrganizations, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
-import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle } from 'lucide-react'
+import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default' }> = {
@@ -30,19 +31,24 @@ function StatCard({ value, label, icon }: { value: number; label: string; icon: 
 export function MyServicesPage() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const { data: appsData, isLoading: appsLoading } = useMyApplications()
+  const { data: progAppsData, isLoading: progAppsLoading } = useMyProgramApplications()
   const { data: savedData, isLoading: savedLoading } = useSavedOrganizations()
   const withdraw = useWithdrawApplication()
+  const withdrawProgram = useWithdrawProgramApplication()
   const unsave = useUnsaveOrganization()
 
   const applications = appsData?.applications ?? []
+  const programApplications = progAppsData?.applications ?? []
   const savedOrgs = savedData?.organizations ?? []
 
   const activeApps = applications.filter((a) => a.status === 'pending' || a.status === 'approved')
   const historyApps = applications.filter((a) => a.status === 'rejected' || a.status === 'withdrawn')
   const pendingCount = applications.filter((a) => a.status === 'pending').length
   const connectedCount = applications.filter((a) => a.status === 'approved').length
+  const activeProgramApps = programApplications.filter((a) => a.status === 'pending' || a.status === 'approved')
+  const historyProgramApps = programApplications.filter((a) => a.status === 'rejected' || a.status === 'withdrawn')
 
-  const isLoading = appsLoading || savedLoading
+  const isLoading = appsLoading || savedLoading || progAppsLoading
 
   return (
     <div className="space-y-8">
@@ -123,6 +129,73 @@ export function MyServicesPage() {
               </div>
             )}
           </section>
+
+          {/* Program Applications */}
+          {(activeProgramApps.length > 0 || historyProgramApps.length > 0) && (
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <GraduationCap className="h-5 w-5 text-indigo-600" />
+                Program Applications
+                {activeProgramApps.length > 0 && (
+                  <span className="text-sm font-normal text-gray-500">({activeProgramApps.length} active)</span>
+                )}
+              </h2>
+              {activeProgramApps.length === 0 ? null : (
+                <div className="space-y-2">
+                  {activeProgramApps.map((app) => {
+                    const cfg = STATUS_CONFIG[app.status]
+                    return (
+                      <Card key={app.id}>
+                        <CardBody className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <Link to={`/programs/${app.program.id}`} className="font-semibold text-gray-900 hover:text-indigo-600">
+                              {app.program.title}
+                            </Link>
+                            <p className="text-sm text-gray-500">
+                              <Link to={`/organizations/${app.program.organization.id}`} className="hover:text-indigo-600">
+                                {app.program.organization.name}
+                              </Link>
+                            </p>
+                            <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                          </div>
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                            {app.status === 'pending' && (
+                              <Button size="sm" variant="outline" disabled={withdrawProgram.isPending}
+                                onClick={() => withdrawProgram.mutate({ id: app.id, programId: app.program.id })}>
+                                Withdraw
+                              </Button>
+                            )}
+                          </div>
+                        </CardBody>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+              {historyProgramApps.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {historyProgramApps.map((app) => {
+                    const cfg = STATUS_CONFIG[app.status]
+                    return (
+                      <Card key={app.id}>
+                        <CardBody className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <Link to={`/programs/${app.program.id}`} className="font-semibold text-gray-700 hover:text-indigo-600">
+                              {app.program.title}
+                            </Link>
+                            <p className="text-sm text-gray-500">{app.program.organization.name}</p>
+                            <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                          </div>
+                          <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                        </CardBody>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Saved Organizations */}
           <section>

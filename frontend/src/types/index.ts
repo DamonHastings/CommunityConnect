@@ -194,7 +194,23 @@ export interface Program {
   contact_email: string | null
   organization: { id: number; name: string }
   applications_open: boolean
+  my_application?: { id: number; status: ApplicationStatus } | null
   created_at: string
+}
+
+export interface ProgramApplication {
+  id: number
+  status: ApplicationStatus
+  message: string | null
+  notes: string | null
+  applicant: { id: number; name: string; email: string }
+  program: {
+    id: number
+    title: string
+    organization: { id: number; name: string }
+  }
+  created_at: string
+  updated_at: string
 }
 
 export interface ApiError {
