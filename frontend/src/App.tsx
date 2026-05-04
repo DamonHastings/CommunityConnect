@@ -17,6 +17,9 @@ import { UserProfilePage } from './pages/profile/UserProfilePage'
 import { IntakeQuestionnairePage } from './pages/intake/IntakeQuestionnairePage'
 import { MyApplicationsPage } from './pages/applications/MyApplicationsPage'
 import { MyServicesPage } from './pages/services/MyServicesPage'
+import { ProgramsPage } from './pages/programs/ProgramsPage'
+import { ProgramDetailPage } from './pages/programs/ProgramDetailPage'
+import { ProgramFormPage } from './pages/programs/ProgramFormPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -49,6 +52,8 @@ function AppRoutes() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/organizations" element={<OrganizationsPage />} />
         <Route path="/organizations/:id" element={<OrganizationProfilePage />} />
+        <Route path="/programs" element={<ProgramsPage />} />
+        <Route path="/programs/:id" element={<ProgramDetailPage />} />
         <Route path="/opportunities" element={<OpportunitiesPage />} />
         <Route path="/opportunities/:id" element={<OpportunityDetailPage />} />
 
@@ -61,6 +66,8 @@ function AppRoutes() {
         <Route path="/organizations/new" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/edit" element={<RequireAuth><OrganizationFormPage /></RequireAuth>} />
         <Route path="/organizations/:id/opportunities/new" element={<RequireAuth><OpportunityFormPage /></RequireAuth>} />
+        <Route path="/organizations/:orgId/programs/new" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />
+        <Route path="/programs/:id/edit" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />
         <Route path="/my-applications" element={<Navigate to="/my-services" replace />} />
         <Route path="/my-services" element={<RequireAuth><MyServicesPage /></RequireAuth>} />
 

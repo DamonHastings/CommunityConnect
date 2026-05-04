@@ -30,7 +30,10 @@ Rails.application.routes.draw do
           delete "members/:user_id", to: "organizations/memberships#destroy"
         end
         resources :opportunities, controller: "engagement_opportunities", only: [:index, :create]
+        resources :programs, only: [:index, :create]
       end
+
+      resources :programs, only: [:index, :show, :update, :destroy]
 
       resources :opportunities, controller: "engagement_opportunities", only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "service_applications", only: [:index, :create]

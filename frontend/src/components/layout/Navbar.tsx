@@ -30,6 +30,9 @@ export function Navbar() {
                 <Link to="/organizations" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                   Organizations
                 </Link>
+                <Link to="/programs" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Programs
+                </Link>
                 <Link to="/opportunities" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                   Opportunities
                 </Link>

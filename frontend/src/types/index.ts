@@ -164,6 +164,39 @@ export interface PaginationMeta {
   per_page: number
 }
 
+export type ProgramType =
+  | 'mentorship'
+  | 'workshop'
+  | 'summer_program'
+  | 'tutoring'
+  | 'job_training'
+  | 'volunteer'
+  | 'community_event'
+  | 'other'
+
+export type ProgramStatus = 'draft' | 'published' | 'active' | 'completed' | 'cancelled'
+
+export interface Program {
+  id: number
+  title: string
+  description: string | null
+  goals: string | null
+  program_type: ProgramType
+  status: ProgramStatus
+  capacity: number | null
+  city: string | null
+  state: string | null
+  remote: boolean
+  application_opens_at: string | null
+  application_closes_at: string | null
+  starts_on: string | null
+  ends_on: string | null
+  contact_email: string | null
+  organization: { id: number; name: string }
+  applications_open: boolean
+  created_at: string
+}
+
 export interface ApiError {
   error?: string
   errors?: string[]

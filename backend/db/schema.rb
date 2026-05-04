@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_200805) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_015010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_200805) do
     t.boolean "verified"
     t.string "website"
     t.string "zip"
+  end
+
+  create_table "programs", force: :cascade do |t|
+    t.datetime "application_closes_at"
+    t.datetime "application_opens_at"
+    t.integer "capacity"
+    t.string "city"
+    t.string "contact_email"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.date "ends_on"
+    t.text "goals"
+    t.bigint "organization_id", null: false
+    t.integer "program_type", default: 0, null: false
+    t.boolean "remote", default: false, null: false
+    t.date "starts_on"
+    t.string "state"
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_programs_on_organization_id"
+    t.index ["status"], name: "index_programs_on_status"
   end
 
   create_table "saved_organizations", force: :cascade do |t|
@@ -130,6 +152,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_03_200805) do
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "programs", "organizations"
   add_foreign_key "saved_organizations", "organizations"
   add_foreign_key "saved_organizations", "users"
   add_foreign_key "service_applications", "engagement_opportunities"

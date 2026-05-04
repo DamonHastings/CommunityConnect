@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useOrganization } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
+import { useOrganizationPrograms } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useAuth } from '../../contexts/AuthContext'
@@ -9,6 +10,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
+import { ProgramCard } from '../../components/programs/ProgramCard'
 import { CATEGORY_LABELS, formatDate } from '../../lib/utils'
 import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
@@ -91,6 +93,7 @@ export function OrganizationProfilePage() {
   const { user } = useAuth()
   const { data: org, isLoading } = useOrganization(id!)
   const { data: oppsData } = useOrganizationOpportunities(id!)
+  const { data: programsData } = useOrganizationPrograms(id!)
   const save = useSaveOrganization()
   const unsave = useUnsaveOrganization()
 
@@ -191,6 +194,31 @@ export function OrganizationProfilePage() {
                     <OpportunityCard opportunity={opp} />
                     {isAdmin && <OppApplicationsPanel opp={opp} />}
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Programs
+                {(programsData?.programs.length ?? 0) > 0 && (
+                  <span className="ml-2 text-sm font-normal text-gray-500">({programsData!.programs.length})</span>
+                )}
+              </h2>
+              {isAdmin && (
+                <Link to={`/organizations/${org.id}/programs/new`}>
+                  <Button size="sm">+ Add Program</Button>
+                </Link>
+              )}
+            </div>
+            {(programsData?.programs.length ?? 0) === 0 ? (
+              <p className="text-gray-500">No programs at this time.</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {programsData!.programs.map((program) => (
+                  <ProgramCard key={program.id} program={program} showOrg={false} />
                 ))}
               </div>
             )}

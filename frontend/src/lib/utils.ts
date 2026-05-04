@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import type { OrganizationCategory, OpportunityType, ProfileType } from '../types'
+import type { OrganizationCategory, OpportunityType, ProfileType, ProgramType, ProgramStatus } from '../types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -80,6 +80,25 @@ export const NEEDS_CATEGORY_LABELS: Record<string, string> = {
   childcare: 'Childcare',
   substance_use_support: 'Substance use support',
   other: 'Other',
+}
+
+export const PROGRAM_TYPE_LABELS: Record<ProgramType, string> = {
+  mentorship: 'Mentorship',
+  workshop: 'Workshop',
+  summer_program: 'Summer Program',
+  tutoring: 'Tutoring',
+  job_training: 'Job Training',
+  volunteer: 'Volunteer',
+  community_event: 'Community Event',
+  other: 'Other',
+}
+
+export const PROGRAM_STATUS_LABELS: Record<ProgramStatus, string> = {
+  draft: 'Draft',
+  published: 'Published',
+  active: 'Active',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 }
 
 export function formatDate(date: string | null): string {
