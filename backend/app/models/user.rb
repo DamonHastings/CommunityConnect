@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :saved_organizations, dependent: :destroy
   has_many :saved_orgs, through: :saved_organizations, source: :organization
   has_many :referrals, foreign_key: :referred_user_id, dependent: :destroy
+  has_many :conversation_participants, dependent: :destroy
+  has_many :conversations, through: :conversation_participants
 
   enum :profile_type, {
     individual_seeker: 0,

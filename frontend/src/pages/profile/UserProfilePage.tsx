@@ -1,12 +1,13 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import api from '../../lib/api'
 import type { User } from '../../types'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { useAuth } from '../../contexts/AuthContext'
 import { PROFILE_TYPE_LABELS } from '../../lib/utils'
-import { Building2, Mail, MapPin, Globe, Briefcase } from 'lucide-react'
+import { Building2, Mail, MapPin, Globe, Briefcase, MessageSquare } from 'lucide-react'
 
 function fetchUser(id: string): Promise<User> {
   return api.get(`/users/${id}`).then((r) => r.data.user)
@@ -14,6 +15,8 @@ function fetchUser(id: string): Promise<User> {
 
 export function UserProfilePage() {
   const { id } = useParams<{ id: string }>()
+  const { user: currentUser } = useAuth()
+  const navigate = useNavigate()
 
   const { data: user, isLoading, isError } = useQuery({
     queryKey: ['user', id],
@@ -39,12 +42,24 @@ export function UserProfilePage() {
           )}
         </div>
         {isProfessional && (
-          <a href={`mailto:${user.email}`}>
-            <Button variant="outline" size="sm">
-              <Mail className="mr-1.5 h-4 w-4" />
-              Contact
-            </Button>
-          </a>
+          <div className="flex gap-2">
+            <a href={`mailto:${user.email}`}>
+              <Button variant="outline" size="sm">
+                <Mail className="mr-1.5 h-4 w-4" />
+                Contact
+              </Button>
+            </a>
+            {currentUser && currentUser.id !== user.id && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/messages?compose=${user.id}`)}
+              >
+                <MessageSquare className="mr-1.5 h-4 w-4" />
+                Message
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

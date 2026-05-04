@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_215604) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_220319) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_215604) do
     t.datetime "updated_at", null: false
     t.index ["organization_id", "published_at"], name: "index_announcements_on_organization_id_and_published_at"
     t.index ["organization_id"], name: "index_announcements_on_organization_id"
+  end
+
+  create_table "conversation_participants", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "last_read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["conversation_id", "user_id"], name: "index_conversation_participants_on_conversation_id_and_user_id", unique: true
+    t.index ["conversation_id"], name: "index_conversation_participants_on_conversation_id"
+    t.index ["user_id"], name: "index_conversation_participants_on_user_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "engagement_opportunities", force: :cascade do |t|
@@ -41,6 +57,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_215604) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_engagement_opportunities_on_organization_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.text "body", null: false
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "sender_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
 
   create_table "organization_memberships", force: :cascade do |t|
@@ -225,7 +251,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_215604) do
   end
 
   add_foreign_key "announcements", "organizations"
+  add_foreign_key "conversation_participants", "conversations"
+  add_foreign_key "conversation_participants", "users"
   add_foreign_key "engagement_opportunities", "organizations"
+  add_foreign_key "messages", "conversations"
+  add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "partner_connections", "organizations", column: "requester_org_id"

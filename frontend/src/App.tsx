@@ -21,6 +21,8 @@ import { ProgramsPage } from './pages/programs/ProgramsPage'
 import { ProgramDetailPage } from './pages/programs/ProgramDetailPage'
 import { ProgramFormPage } from './pages/programs/ProgramFormPage'
 import { ProfessionalsPage } from './pages/professionals/ProfessionalsPage'
+import { MessagesPage } from './pages/messages/MessagesPage'
+import { ConversationPage } from './pages/messages/ConversationPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -72,6 +74,8 @@ function AppRoutes() {
         <Route path="/programs/:id/edit" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />
         <Route path="/my-applications" element={<Navigate to="/my-services" replace />} />
         <Route path="/my-services" element={<RequireAuth><MyServicesPage /></RequireAuth>} />
+        <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
+        <Route path="/messages/:id" element={<RequireAuth><ConversationPage /></RequireAuth>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

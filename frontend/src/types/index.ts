@@ -237,6 +237,21 @@ export interface Announcement {
   created_at: string
 }
 
+export interface Message {
+  id: number
+  body: string
+  sender: { id: number; name: string }
+  created_at: string
+}
+
+export interface Conversation {
+  id: number
+  participants: { id: number; name: string }[]
+  last_message: { id: number; body: string; sender_name: string; created_at: string } | null
+  unread_count: number
+  created_at: string
+}
+
 export interface Referral {
   id: number
   status: 'pending' | 'accepted' | 'declined'

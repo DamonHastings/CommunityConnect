@@ -54,6 +54,10 @@ Rails.application.routes.draw do
       resources :applications, controller: "service_applications", only: [:update, :destroy]
       get "my/applications", to: "my_applications#index"
       resources :saved_organizations, only: [:index, :create, :destroy]
+
+      resources :conversations, only: [:index, :show, :create] do
+        resources :messages, only: [:create]
+      end
     end
   end
 
