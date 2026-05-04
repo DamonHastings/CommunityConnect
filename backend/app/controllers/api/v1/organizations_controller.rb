@@ -12,6 +12,7 @@ class Api::V1::OrganizationsController < ApplicationController
     organizations = organizations.by_category(params[:category]) if params[:category].present?
     organizations = organizations.by_city(params[:city]) if params[:city].present?
     organizations = organizations.by_state(params[:state]) if params[:state].present?
+    organizations = organizations.where(org_type: params[:org_type]) if params[:org_type].present?
 
     if params[:near].present? && params[:radius].present?
       lat, lng = params[:near].split(",").map(&:to_f)
@@ -66,7 +67,7 @@ class Api::V1::OrganizationsController < ApplicationController
 
   def organization_params
     params.require(:organization).permit(
-      :name, :description, :mission, :category, :website,
+      :name, :description, :mission, :category, :org_type, :website,
       :contact_email, :phone, :address, :city, :state, :zip, :country
     )
   end

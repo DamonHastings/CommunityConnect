@@ -8,11 +8,12 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
-import { CATEGORY_LABELS } from '../../lib/utils'
+import { CATEGORY_LABELS, ORG_TYPE_OPTIONS } from '../../lib/utils'
 import { useState } from 'react'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
+  org_type: z.string().optional(),
   description: z.string().optional(),
   mission: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
@@ -48,6 +49,7 @@ export function OrganizationFormPage() {
     if (existing) {
       reset({
         name: existing.name,
+        org_type: existing.org_type ?? 'nonprofit',
         description: existing.description ?? '',
         mission: existing.mission ?? '',
         category: existing.category,
@@ -101,6 +103,11 @@ export function OrganizationFormPage() {
           <CardHeader><h2 className="font-semibold text-gray-900">Basic Information</h2></CardHeader>
           <CardBody className="space-y-4">
             <Input label="Organization name *" error={errors.name?.message} {...register('name')} />
+            <Select
+              label="Organization type"
+              options={ORG_TYPE_OPTIONS}
+              {...register('org_type')}
+            />
             <Select
               label="Category *"
               options={CATEGORY_OPTIONS}

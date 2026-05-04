@@ -77,12 +77,15 @@ export interface IntakeFormData {
   preferred_contact: string
 }
 
+export type OrgType = 'nonprofit' | 'business' | 'school'
+
 export interface Organization {
   id: number
   name: string
   description: string | null
   mission: string | null
   category: OrganizationCategory
+  org_type: OrgType
   website: string | null
   contact_email: string | null
   phone: string | null

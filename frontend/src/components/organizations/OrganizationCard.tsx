@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import type { Organization } from '../../types'
 import { Card, CardBody } from '../ui/Card'
 import { Badge } from '../ui/Badge'
-import { CATEGORY_LABELS } from '../../lib/utils'
+import { CATEGORY_LABELS, ORG_TYPE_LABELS } from '../../lib/utils'
 import { MapPin, Users, Briefcase, Bookmark } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
@@ -48,6 +48,9 @@ export function OrganizationCard({ organization: org }: OrganizationCardProps) {
                     color={isSaved ? '#4f46e5' : undefined}
                   />
                 </button>
+              )}
+              {org.org_type && org.org_type !== 'nonprofit' && (
+                <Badge variant="default">{ORG_TYPE_LABELS[org.org_type]}</Badge>
               )}
               <Badge variant="info">{CATEGORY_LABELS[org.category]}</Badge>
             </div>

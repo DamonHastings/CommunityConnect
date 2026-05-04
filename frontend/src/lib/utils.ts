@@ -101,6 +101,18 @@ export const PROGRAM_STATUS_LABELS: Record<ProgramStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+export const ORG_TYPE_LABELS: Record<string, string> = {
+  nonprofit: 'Nonprofit',
+  business: 'Business',
+  school: 'School / Institution',
+}
+
+export const ORG_TYPE_OPTIONS = [
+  { value: 'nonprofit', label: 'Nonprofit / Community Org' },
+  { value: 'business', label: 'Business / Service Provider' },
+  { value: 'school', label: 'School / Institution' },
+]
+
 export const SPECIALTY_OPTIONS = [
   'Legal',
   'Medical / Healthcare',

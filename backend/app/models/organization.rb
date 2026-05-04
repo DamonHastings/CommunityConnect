@@ -25,6 +25,12 @@ class Organization < ApplicationRecord
     inactive: 2
   }
 
+  enum :org_type, {
+    nonprofit: 0,
+    business: 1,
+    school: 2
+  }
+
   validates :name, presence: true
   validates :contact_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
 

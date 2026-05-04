@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_060000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_060000) do
     t.float "longitude"
     t.text "mission"
     t.string "name"
+    t.integer "org_type", default: 0, null: false
     t.string "phone"
     t.string "state"
     t.integer "status"
@@ -62,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_060000) do
     t.boolean "verified"
     t.string "website"
     t.string "zip"
+    t.index ["org_type"], name: "index_organizations_on_org_type"
   end
 
   create_table "program_applications", force: :cascade do |t|

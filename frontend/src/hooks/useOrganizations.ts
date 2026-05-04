@@ -5,6 +5,7 @@ import type { Organization, PaginationMeta } from '../types'
 interface OrganizationFilters {
   q?: string
   category?: string
+  org_type?: string
   city?: string
   state?: string
   page?: number
