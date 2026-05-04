@@ -20,6 +20,7 @@ import { MyServicesPage } from './pages/services/MyServicesPage'
 import { ProgramsPage } from './pages/programs/ProgramsPage'
 import { ProgramDetailPage } from './pages/programs/ProgramDetailPage'
 import { ProgramFormPage } from './pages/programs/ProgramFormPage'
+import { ProfessionalsPage } from './pages/professionals/ProfessionalsPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ function AppRoutes() {
         <Route path="/opportunities/:id" element={<OpportunityDetailPage />} />
 
         <Route path="/users/:id" element={<UserProfilePage />} />
+        <Route path="/professionals" element={<ProfessionalsPage />} />
 
         {/* Protected routes */}
         <Route path="/intake" element={<RequireAuth><IntakeQuestionnairePage /></RequireAuth>} />

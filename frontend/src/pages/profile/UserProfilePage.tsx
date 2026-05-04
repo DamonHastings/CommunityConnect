@@ -4,8 +4,9 @@ import api from '../../lib/api'
 import type { User } from '../../types'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
+import { Button } from '../../components/ui/Button'
 import { PROFILE_TYPE_LABELS } from '../../lib/utils'
-import { Building2 } from 'lucide-react'
+import { Building2, Mail, MapPin, Globe, Briefcase } from 'lucide-react'
 
 function fetchUser(id: string): Promise<User> {
   return api.get(`/users/${id}`).then((r) => r.data.user)
@@ -23,10 +24,28 @@ export function UserProfilePage() {
   if (isLoading) return <div className="flex h-64 items-center justify-center text-gray-400">Loading…</div>
   if (isError || !user) return <div className="py-16 text-center text-gray-500">User not found.</div>
 
+  const isProfessional = user.profile_type === 'individual_professional'
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">{user.full_name}</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{user.full_name}</h1>
+          {isProfessional && user.specialty && (
+            <p className="mt-1 flex items-center gap-1.5 text-gray-600">
+              <Briefcase className="h-4 w-4 text-gray-400" />
+              {user.specialty}
+            </p>
+          )}
+        </div>
+        {isProfessional && (
+          <a href={`mailto:${user.email}`}>
+            <Button variant="outline" size="sm">
+              <Mail className="mr-1.5 h-4 w-4" />
+              Contact
+            </Button>
+          </a>
+        )}
       </div>
 
       <Card>
@@ -42,13 +61,28 @@ export function UserProfilePage() {
           <CardBody className="space-y-3 text-sm text-gray-700">
             {user.bio && <p>{user.bio}</p>}
             {(user.city || user.state) && (
-              <p className="text-gray-500">{[user.city, user.state].filter(Boolean).join(', ')}</p>
+              <p className="flex items-center gap-1.5 text-gray-500">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                {[user.city, user.state].filter(Boolean).join(', ')}
+              </p>
             )}
             {user.website && (
-              <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+              <a href={user.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-indigo-600 hover:underline">
+                <Globe className="h-4 w-4" />
                 {user.website}
               </a>
             )}
+          </CardBody>
+        </Card>
+      )}
+
+      {isProfessional && user.communities_served && user.communities_served.length > 0 && (
+        <Card>
+          <CardHeader>Communities served</CardHeader>
+          <CardBody>
+            <div className="flex flex-wrap gap-1.5">
+              {user.communities_served.map((c) => <Badge key={c} variant="info">{c}</Badge>)}
+            </div>
           </CardBody>
         </Card>
       )}
@@ -76,7 +110,7 @@ export function UserProfilePage() {
             {user.availability && (
               <div>
                 <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">Availability</p>
-                <p className="text-sm capitalize text-gray-700">{user.availability.replace('_', ' ')}</p>
+                <p className="text-sm capitalize text-gray-700">{user.availability.replace(/_/g, ' ')}</p>
               </div>
             )}
           </CardBody>

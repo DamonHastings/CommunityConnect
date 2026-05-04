@@ -101,6 +101,18 @@ export const PROGRAM_STATUS_LABELS: Record<ProgramStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+export const SPECIALTY_OPTIONS = [
+  'Legal',
+  'Medical / Healthcare',
+  'Mental Health / Counseling',
+  'Education / Tutoring',
+  'Financial / Accounting',
+  'Technology',
+  'Social Work',
+  'Career Coaching',
+  'Other',
+]
+
 export function formatDate(date: string | null): string {
   if (!date) return ''
   return new Date(date).toLocaleDateString('en-US', {

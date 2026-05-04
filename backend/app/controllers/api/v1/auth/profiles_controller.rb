@@ -21,8 +21,8 @@ class Api::V1::Auth::ProfilesController < ApplicationController
 
   def profile_params
     params.require(:user).permit(
-      :bio, :phone, :city, :state, :website, :availability, :profile_type,
-      services_offered: [], services_needed: []
+      :bio, :phone, :city, :state, :website, :availability, :profile_type, :specialty,
+      services_offered: [], services_needed: [], communities_served: []
     )
   end
 end

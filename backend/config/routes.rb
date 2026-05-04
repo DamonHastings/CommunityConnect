@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get "matches", to: "matches#show"
 
       resources :users, only: [:show]
+      get 'professionals', to: 'professionals#index'
 
       resources :organizations do
         member do

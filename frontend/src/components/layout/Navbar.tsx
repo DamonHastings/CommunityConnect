@@ -36,6 +36,9 @@ export function Navbar() {
                 <Link to="/opportunities" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                   Opportunities
                 </Link>
+                <Link to="/professionals" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                  Professionals
+                </Link>
                 {user && (
                   <Link to="/my-services" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                     My Services

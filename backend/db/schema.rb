@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_031547) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,6 +140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_031547) do
     t.string "availability"
     t.text "bio"
     t.string "city"
+    t.text "communities_served", default: [], array: true
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -154,12 +155,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_031547) do
     t.string "reset_password_token"
     t.string "services_needed", default: [], array: true
     t.string "services_offered", default: [], array: true
+    t.string "specialty"
     t.string "state"
     t.datetime "updated_at", null: false
     t.string "website"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
+    t.index ["profile_type"], name: "index_users_on_profile_type"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["specialty"], name: "index_users_on_specialty"
   end
 
   add_foreign_key "engagement_opportunities", "organizations"

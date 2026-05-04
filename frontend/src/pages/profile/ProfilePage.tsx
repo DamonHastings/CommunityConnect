@@ -9,7 +9,7 @@ import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
-import { PROFILE_TYPE_LABELS, PROFILE_TYPE_OPTIONS } from '../../lib/utils'
+import { PROFILE_TYPE_LABELS, PROFILE_TYPE_OPTIONS, SPECIALTY_OPTIONS } from '../../lib/utils'
 import { Link } from 'react-router-dom'
 import { Building2, Pencil, X, Check } from 'lucide-react'
 import type { ProfileType } from '../../types'
@@ -22,6 +22,8 @@ const schema = z.object({
   state: z.string().optional(),
   website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
   availability: z.string().optional(),
+  specialty: z.string().optional(),
+  communities_served: z.string().optional(),
   services_offered: z.string().optional(),
   services_needed: z.string().optional(),
 })
@@ -42,7 +44,7 @@ export function ProfilePage() {
   const [editing, setEditing] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, control, reset, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       profile_type: user?.profile_type ?? 'individual_seeker',
@@ -52,10 +54,14 @@ export function ProfilePage() {
       state: user?.state ?? '',
       website: user?.website ?? '',
       availability: user?.availability ?? '',
+      specialty: user?.specialty ?? '',
+      communities_served: arrayToTags(user?.communities_served ?? []),
       services_offered: arrayToTags(user?.services_offered ?? []),
       services_needed: arrayToTags(user?.services_needed ?? []),
     },
   })
+
+  const watchedProfileType = watch('profile_type')
 
   if (!user) return null
 
@@ -69,6 +75,8 @@ export function ProfilePage() {
       state: data.state || undefined,
       website: data.website || undefined,
       availability: data.availability || undefined,
+      specialty: data.specialty || undefined,
+      communities_served: tagsToArray(data.communities_served),
       services_offered: tagsToArray(data.services_offered),
       services_needed: tagsToArray(data.services_needed),
     }
@@ -89,6 +97,8 @@ export function ProfilePage() {
       state: user.state ?? '',
       website: user.website ?? '',
       availability: user.availability ?? '',
+      specialty: user.specialty ?? '',
+      communities_served: arrayToTags(user.communities_served ?? []),
       services_offered: arrayToTags(user.services_offered),
       services_needed: arrayToTags(user.services_needed),
     })
@@ -168,6 +178,27 @@ export function ProfilePage() {
               <Input label="Website" type="url" placeholder="https://example.com" error={errors.website?.message} {...register('website')} />
             </CardBody>
           </Card>
+
+          {watchedProfileType === 'individual_professional' && (
+            <Card>
+              <CardHeader>Professional details</CardHeader>
+              <CardBody className="space-y-4">
+                <Select
+                  label="Specialty"
+                  options={[
+                    { value: '', label: 'Not specified' },
+                    ...SPECIALTY_OPTIONS.map((s) => ({ value: s, label: s })),
+                  ]}
+                  {...register('specialty')}
+                />
+                <Input
+                  label="Communities served"
+                  placeholder="e.g. low-income families, veterans, immigrants (comma-separated)"
+                  {...register('communities_served')}
+                />
+              </CardBody>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>Services &amp; availability</CardHeader>

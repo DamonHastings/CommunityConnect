@@ -32,6 +32,8 @@ export interface ProfileUpdateData {
   state?: string
   website?: string
   availability?: string
+  specialty?: string
+  communities_served?: string[]
   services_offered?: string[]
   services_needed?: string[]
 }

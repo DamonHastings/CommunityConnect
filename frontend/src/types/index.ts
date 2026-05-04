@@ -26,6 +26,8 @@ export interface User {
   state: string | null
   website: string | null
   availability: string | null
+  specialty: string | null
+  communities_served: string[]
   services_offered: string[]
   services_needed: string[]
   organizations: UserOrganization[]
