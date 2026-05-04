@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_080100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "announcements", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "published_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "published_at"], name: "index_announcements_on_organization_id_and_published_at"
+    t.index ["organization_id"], name: "index_announcements_on_organization_id"
+  end
 
   create_table "engagement_opportunities", force: :cascade do |t|
     t.string "contact_email"
@@ -51,6 +62,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_070000) do
     t.datetime "created_at", null: false
     t.integer "creator_id"
     t.text "description"
+    t.boolean "featured", default: false, null: false
+    t.date "featured_until"
     t.float "latitude"
     t.float "longitude"
     t.text "mission"
@@ -63,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_070000) do
     t.boolean "verified"
     t.string "website"
     t.string "zip"
+    t.index ["featured"], name: "index_organizations_on_featured"
     t.index ["org_type"], name: "index_organizations_on_org_type"
   end
 
@@ -168,6 +182,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_070000) do
     t.index ["specialty"], name: "index_users_on_specialty"
   end
 
+  add_foreign_key "announcements", "organizations"
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"

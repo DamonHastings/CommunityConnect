@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useOrganization } from '../../hooks/useOrganizations'
+import { useOrganization, useUpdateOrganization } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
 import { useOrganizationPrograms } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
+import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
-import { CATEGORY_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark } from 'lucide-react'
+import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2 } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -50,20 +52,12 @@ function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
                   <ApplicationStatusBadge status={app.status} />
                   {app.status === 'pending' && (
                     <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={update.isPending}
-                        onClick={() => update.mutate({ id: app.id, status: 'approved' })}
-                      >
+                      <Button size="sm" variant="outline" disabled={update.isPending}
+                        onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
                         Approve
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={update.isPending}
-                        onClick={() => update.mutate({ id: app.id, status: 'rejected' })}
-                      >
+                      <Button size="sm" variant="outline" disabled={update.isPending}
+                        onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
                         Reject
                       </Button>
                     </div>
@@ -80,12 +74,86 @@ function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
 
 function ApplicationStatusBadge({ status }: { status: string }) {
   const variants: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    pending: 'warning',
-    approved: 'success',
-    rejected: 'error',
-    withdrawn: 'default',
+    pending: 'warning', approved: 'success', rejected: 'error', withdrawn: 'default',
   }
   return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
+}
+
+function AnnouncementsPanel({ orgId, isAdmin }: { orgId: number; isAdmin: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const { data } = useOrgAnnouncements(orgId)
+  const create = useCreateAnnouncement(orgId)
+  const del = useDeleteAnnouncement(orgId)
+  const announcements = data?.announcements ?? []
+
+  const handleCreate = () => {
+    if (!title.trim() || !body.trim()) return
+    create.mutate({ title, body, publish: true }, {
+      onSuccess: () => { setTitle(''); setBody('') },
+    })
+  }
+
+  if (!isAdmin && announcements.length === 0) return null
+
+  return (
+    <div>
+      <button
+        className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+        <Megaphone className="h-5 w-5 text-indigo-600" />
+        Announcements
+        {announcements.length > 0 && <span className="text-sm font-normal text-gray-500">({announcements.length})</span>}
+      </button>
+
+      {open && (
+        <div className="space-y-3">
+          {announcements.map((a) => (
+            <Card key={a.id}>
+              <CardBody className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-gray-900">{a.title}</p>
+                  <p className="mt-0.5 text-sm text-gray-600 whitespace-pre-line">{a.body}</p>
+                  <p className="mt-1 text-xs text-gray-400">{formatDate(a.published_at ?? a.created_at)}</p>
+                </div>
+                {isAdmin && (
+                  <button onClick={() => del.mutate(a.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </CardBody>
+            </Card>
+          ))}
+
+          {isAdmin && (
+            <Card>
+              <CardBody className="space-y-3">
+                <p className="text-sm font-medium text-gray-700">Post new announcement</p>
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                <textarea
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  rows={3}
+                  placeholder="What would you like to share?"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                />
+                <Button size="sm" disabled={create.isPending || !title.trim() || !body.trim()} onClick={handleCreate}>
+                  {create.isPending ? 'Posting…' : 'Post announcement'}
+                </Button>
+              </CardBody>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function OrganizationProfilePage() {
@@ -96,6 +164,7 @@ export function OrganizationProfilePage() {
   const { data: programsData } = useOrganizationPrograms(id!)
   const save = useSaveOrganization()
   const unsave = useUnsaveOrganization()
+  const updateOrg = useUpdateOrganization(id!)
 
   if (isLoading) {
     return (
@@ -109,6 +178,7 @@ export function OrganizationProfilePage() {
   if (!org) return <div className="py-16 text-center text-gray-500">Organization not found.</div>
 
   const isAdmin = user?.organizations.some((m) => m.id === org.id && m.role === 'admin')
+  const isPlatformAdmin = user?.platform_admin ?? false
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
 
@@ -119,13 +189,32 @@ export function OrganizationProfilePage() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-gray-900">{org.name}</h1>
             {org.verified && <Badge variant="success">Verified</Badge>}
+            {org.featured && (
+              <span className="flex items-center gap-1 text-sm font-medium text-amber-600">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                Featured
+              </span>
+            )}
           </div>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <Badge variant="info">{CATEGORY_LABELS[org.category]}</Badge>
+            {org.org_type && org.org_type !== 'nonprofit' && (
+              <Badge variant="default">{ORG_TYPE_LABELS[org.org_type]}</Badge>
+            )}
             <Badge variant={org.status === 'active' ? 'success' : 'default'}>{org.status}</Badge>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isPlatformAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => updateOrg.mutate({ featured: !org.featured } as Parameters<typeof updateOrg.mutate>[0])}
+            >
+              <Star className="mr-1.5 h-4 w-4" />
+              {org.featured ? 'Unfeature' : 'Feature'}
+            </Button>
+          )}
           {user && !isAdmin && (
             <Button
               variant="outline"
@@ -170,6 +259,8 @@ export function OrganizationProfilePage() {
               </CardBody>
             </Card>
           )}
+
+          <AnnouncementsPanel orgId={org.id} isAdmin={!!isAdmin} />
 
           <div>
             <div className="mb-4 flex items-center justify-between">

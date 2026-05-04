@@ -3,7 +3,7 @@ import type { Organization } from '../../types'
 import { Card, CardBody } from '../ui/Card'
 import { Badge } from '../ui/Badge'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS } from '../../lib/utils'
-import { MapPin, Users, Briefcase, Bookmark } from 'lucide-react'
+import { MapPin, Users, Briefcase, Bookmark, Star } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 
@@ -31,6 +31,12 @@ export function OrganizationCard({ organization: org }: OrganizationCardProps) {
     <Link to={`/organizations/${org.id}`}>
       <Card className="h-full transition-shadow hover:shadow-md cursor-pointer">
         <CardBody className="flex flex-col gap-3">
+          {org.featured && (
+            <div className="mb-1 flex items-center gap-1 text-xs font-medium text-amber-600">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+              Featured
+            </div>
+          )}
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-gray-900 leading-tight">{org.name}</h3>
             <div className="flex shrink-0 items-center gap-1.5">

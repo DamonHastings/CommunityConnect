@@ -86,6 +86,7 @@ export interface Organization {
   mission: string | null
   category: OrganizationCategory
   org_type: OrgType
+  featured: boolean
   website: string | null
   contact_email: string | null
   phone: string | null
@@ -216,6 +217,14 @@ export interface ProgramApplication {
   }
   created_at: string
   updated_at: string
+}
+
+export interface Announcement {
+  id: number
+  title: string
+  body: string
+  published_at: string | null
+  created_at: string
 }
 
 export interface ApiError {

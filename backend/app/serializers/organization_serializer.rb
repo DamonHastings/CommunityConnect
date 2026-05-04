@@ -1,7 +1,7 @@
 class OrganizationSerializer
   include JSONAPI::Serializer
 
-  attributes :id, :name, :description, :mission, :category, :org_type, :website,
+  attributes :id, :name, :description, :mission, :category, :org_type, :featured, :website,
              :contact_email, :phone, :address, :city, :state, :zip, :country,
              :latitude, :longitude, :status, :verified, :created_at
 

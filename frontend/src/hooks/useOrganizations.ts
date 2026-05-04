@@ -9,6 +9,7 @@ interface OrganizationFilters {
   city?: string
   state?: string
   page?: number
+  featured?: boolean
 }
 
 interface OrganizationsResponse {

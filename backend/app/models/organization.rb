@@ -7,6 +7,7 @@ class Organization < ApplicationRecord
   has_many :engagement_opportunities, dependent: :destroy
   has_many :saved_by, class_name: "SavedOrganization", dependent: :destroy
   has_many :programs, dependent: :destroy
+  has_many :announcements, dependent: :destroy
 
   enum :category, {
     food_bank: 0,

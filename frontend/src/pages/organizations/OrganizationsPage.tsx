@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button'
 import { useAuth } from '../../contexts/AuthContext'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS } from '../../lib/utils'
 import type { OrganizationCategory } from '../../types'
-import { Search } from 'lucide-react'
+import { Search, Star } from 'lucide-react'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All categories' },
@@ -30,6 +30,7 @@ export function OrganizationsPage() {
   const [page, setPage] = useState(1)
 
   const { data, isLoading } = useOrganizations({ q, category: category as OrganizationCategory, org_type: orgType, city, state, page })
+  const { data: featuredData } = useOrganizations({ featured: true })
 
   return (
     <div>
@@ -44,6 +45,21 @@ export function OrganizationsPage() {
           </Link>
         )}
       </div>
+
+      {(featuredData?.organizations.length ?? 0) > 0 && (
+        <div className="mb-8">
+          <div className="mb-3 flex items-center gap-2">
+            <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+            <h2 className="text-lg font-semibold text-gray-900">Featured Organizations</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredData!.organizations.map((org) => (
+              <OrganizationCard key={org.id} organization={org} />
+            ))}
+          </div>
+          <hr className="mt-6 border-gray-200" />
+        </div>
+      )}
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="relative sm:col-span-2">

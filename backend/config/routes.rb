@@ -32,6 +32,7 @@ Rails.application.routes.draw do
         end
         resources :opportunities, controller: "engagement_opportunities", only: [:index, :create]
         resources :programs, only: [:index, :create]
+        resources :announcements, only: [:index, :create, :destroy]
       end
 
       resources :programs, only: [:index, :show, :update, :destroy] do
