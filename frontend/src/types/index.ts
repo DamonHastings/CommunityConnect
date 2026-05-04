@@ -237,6 +237,16 @@ export interface Announcement {
   created_at: string
 }
 
+export interface Referral {
+  id: number
+  status: 'pending' | 'accepted' | 'declined'
+  message: string | null
+  referring_org: { id: number; name: string }
+  referred_user: { id: number; name: string }
+  target: { type: 'Program' | 'Organization'; id: number; title?: string; name?: string } | null
+  created_at: string
+}
+
 export interface PartnerConnection {
   id: number
   status: 'pending' | 'accepted' | 'declined'

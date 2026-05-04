@@ -9,6 +9,7 @@ class Organization < ApplicationRecord
   has_many :programs, dependent: :destroy
   has_many :program_organizations, dependent: :destroy
   has_many :submitted_applications, class_name: "ServiceApplication", foreign_key: :applicant_org_id, dependent: :nullify
+  has_many :sent_referrals, class_name: "Referral", foreign_key: :referring_org_id, dependent: :destroy
   has_many :announcements, dependent: :destroy
   has_many :sent_partner_connections, class_name: "PartnerConnection", foreign_key: :requester_org_id, dependent: :destroy
   has_many :received_partner_connections, class_name: "PartnerConnection", foreign_key: :target_org_id, dependent: :destroy

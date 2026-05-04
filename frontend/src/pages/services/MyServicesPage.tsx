@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import { useMyApplications, useWithdrawApplication } from '../../hooks/useApplications'
 import { useMyProgramApplications, useWithdrawProgramApplication } from '../../hooks/useProgramApplications'
 import { useSavedOrganizations, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
+import { useMyReferrals, useUpdateReferral } from '../../hooks/useReferrals'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
-import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap } from 'lucide-react'
+import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default' }> = {
@@ -33,13 +34,17 @@ export function MyServicesPage() {
   const { data: appsData, isLoading: appsLoading } = useMyApplications()
   const { data: progAppsData, isLoading: progAppsLoading } = useMyProgramApplications()
   const { data: savedData, isLoading: savedLoading } = useSavedOrganizations()
+  const { data: referralsData } = useMyReferrals()
   const withdraw = useWithdrawApplication()
   const withdrawProgram = useWithdrawProgramApplication()
   const unsave = useUnsaveOrganization()
+  const updateReferral = useUpdateReferral()
 
   const applications = appsData?.applications ?? []
   const programApplications = progAppsData?.applications ?? []
   const savedOrgs = savedData?.organizations ?? []
+  const referrals = referralsData?.referrals ?? []
+  const pendingReferrals = referrals.filter((r) => r.status === 'pending')
 
   const activeApps = applications.filter((a) => a.status === 'pending' || a.status === 'approved')
   const historyApps = applications.filter((a) => a.status === 'rejected' || a.status === 'withdrawn')
@@ -194,6 +199,58 @@ export function MyServicesPage() {
                   })}
                 </div>
               )}
+            </section>
+          )}
+
+          {/* Referrals */}
+          {referrals.length > 0 && (
+            <section>
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <UserCheck className="h-5 w-5 text-indigo-600" />
+                Referrals
+                {pendingReferrals.length > 0 && (
+                  <span className="text-sm font-normal text-gray-500">({pendingReferrals.length} pending)</span>
+                )}
+              </h2>
+              <div className="space-y-2">
+                {referrals.map((r) => (
+                  <Card key={r.id}>
+                    <CardBody className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-700">From: <span className="text-indigo-600">{r.referring_org.name}</span></p>
+                        {r.target && (
+                          <p className="text-sm text-gray-600">
+                            {r.target.type === 'Program' ? (
+                              <Link to={`/programs/${r.target.id}`} className="text-indigo-600 hover:underline">{r.target.title}</Link>
+                            ) : (
+                              <Link to={`/organizations/${r.target.id}`} className="text-indigo-600 hover:underline">{r.target.name}</Link>
+                            )}
+                          </p>
+                        )}
+                        {r.message && <p className="mt-0.5 text-sm text-gray-500 line-clamp-2">{r.message}</p>}
+                        <p className="mt-0.5 text-xs text-gray-400">{formatDate(r.created_at)}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'error' : 'warning'}>
+                          {r.status}
+                        </Badge>
+                        {r.status === 'pending' && (
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="outline" disabled={updateReferral.isPending}
+                              onClick={() => updateReferral.mutate({ id: r.id, status: 'accepted' })}>
+                              Accept
+                            </Button>
+                            <Button size="sm" variant="outline" disabled={updateReferral.isPending}
+                              onClick={() => updateReferral.mutate({ id: r.id, status: 'declined' })}>
+                              Decline
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
             </section>
           )}
 

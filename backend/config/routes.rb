@@ -34,8 +34,11 @@ Rails.application.routes.draw do
         resources :programs, only: [:index, :create]
         resources :announcements, only: [:index, :create, :destroy]
         resources :partner_connections, only: [:index, :create]
+        resources :referrals, only: [:index, :create]
       end
       resources :partner_connections, only: [:update, :destroy]
+      resources :referrals, only: [:update]
+      get "my/referrals", to: "my_referrals#index"
 
       resources :programs, only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "program_applications", only: [:index, :create]

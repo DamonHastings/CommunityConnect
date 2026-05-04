@@ -7,6 +7,7 @@ import { useOpportunityApplications, useUpdateApplication } from '../../hooks/us
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useOrgConnections, useSendConnectionRequest, useUpdateConnectionRequest, useCancelConnectionRequest } from '../../hooks/usePartnerConnections'
+import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -15,7 +16,7 @@ import { Input } from '../../components/ui/Input'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -154,6 +155,83 @@ function AnnouncementsPanel({ orgId, isAdmin }: { orgId: number; isAdmin: boolea
               </CardBody>
             </Card>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ReferralsPanel({ orgId }: { orgId: number }) {
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const { data } = useOrgReferrals(orgId)
+  const send = useSendReferral(orgId)
+  const referrals = data?.referrals ?? []
+
+  const handleSend = () => {
+    if (!email.trim()) return
+    send.mutate({ referred_user_email: email.trim(), message: message.trim() || undefined }, {
+      onSuccess: () => { setEmail(''); setMessage('') },
+    })
+  }
+
+  return (
+    <div>
+      <button
+        className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+        <UserCheck className="h-5 w-5 text-indigo-600" />
+        Referrals
+        {referrals.length > 0 && <span className="text-sm font-normal text-gray-500">({referrals.length} sent)</span>}
+      </button>
+
+      {open && (
+        <div className="space-y-3">
+          {referrals.map((r) => (
+            <Card key={r.id}>
+              <CardBody className="flex items-start justify-between gap-3 text-sm">
+                <div>
+                  <p className="font-medium text-gray-900">{r.referred_user.name}</p>
+                  {r.target && (
+                    <p className="text-xs text-gray-500">
+                      → {r.target.type}: {r.target.title ?? r.target.name}
+                    </p>
+                  )}
+                  {r.message && <p className="mt-0.5 text-gray-600">{r.message}</p>}
+                </div>
+                <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'error' : 'warning'}>
+                  {r.status}
+                </Badge>
+              </CardBody>
+            </Card>
+          ))}
+
+          <Card>
+            <CardBody className="space-y-3">
+              <p className="text-sm font-medium text-gray-700">Send a referral</p>
+              <Input
+                placeholder="User email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <textarea
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                rows={2}
+                placeholder="Optional message…"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <Button size="sm" disabled={send.isPending || !email.trim()} onClick={handleSend}>
+                {send.isPending ? 'Sending…' : 'Send Referral'}
+              </Button>
+              {send.isError && (
+                <p className="text-sm text-red-600">User not found or referral failed.</p>
+              )}
+            </CardBody>
+          </Card>
         </div>
       )}
     </div>
@@ -396,6 +474,8 @@ export function OrganizationProfilePage() {
           <AnnouncementsPanel orgId={org.id} isAdmin={!!isAdmin} />
 
           <PartnerConnectionsPanel orgId={org.id} isAdmin={!!isAdmin} />
+
+          {isAdmin && <ReferralsPanel orgId={org.id} />}
 
           <div>
             <div className="mb-4 flex items-center justify-between">
