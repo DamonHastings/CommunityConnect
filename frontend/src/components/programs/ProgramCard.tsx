@@ -10,12 +10,12 @@ interface ProgramCardProps {
   showOrg?: boolean
 }
 
-const STATUS_VARIANTS: Record<Program['status'], 'warning' | 'info' | 'success' | 'default' | 'error'> = {
+const STATUS_VARIANTS: Record<Program['status'], 'warning' | 'info' | 'success' | 'default' | 'danger'> = {
   draft: 'warning',
   published: 'info',
   active: 'success',
   completed: 'default',
-  cancelled: 'error',
+  cancelled: 'danger',
 }
 
 export function ProgramCard({ program, showOrg = true }: ProgramCardProps) {

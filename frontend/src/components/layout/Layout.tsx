@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar'
 
 export function Layout() {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-bg">
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />

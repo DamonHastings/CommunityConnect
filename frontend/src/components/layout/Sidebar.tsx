@@ -35,12 +35,12 @@ export function Sidebar() {
   const linkClass = (to: string) =>
     `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
       isActive(to)
-        ? 'bg-indigo-50 text-indigo-700'
-        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        ? 'bg-primary-subtle text-primary'
+        : 'text-secondary hover:bg-bg hover:text-heading'
     }`
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface">
       <nav className="flex flex-col gap-1 p-3 pt-4">
         {navItems
           .filter(item => !item.authOnly || !!user)
@@ -58,7 +58,7 @@ export function Sidebar() {
             <MessageSquare className="h-4 w-4 shrink-0" />
             Messages
             {totalUnread > 0 && (
-              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                 {totalUnread > 9 ? '9+' : totalUnread}
               </span>
             )}
