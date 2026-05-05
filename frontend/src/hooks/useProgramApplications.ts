@@ -57,7 +57,7 @@ export function useUpdateProgramApplication() {
 export function useWithdrawProgramApplication() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, programId }: { id: number; programId: number }) =>
+    mutationFn: ({ id, programId: _programId }: { id: number; programId: number }) =>
       api
         .delete<{ application: ProgramApplication }>(`/program_applications/${id}`)
         .then((r) => r.data.application),

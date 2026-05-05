@@ -54,7 +54,7 @@ export function useUpdateApplication() {
 export function useWithdrawApplication() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, opportunityId }: { id: number; opportunityId: number }) =>
+    mutationFn: ({ id, opportunityId: _opportunityId }: { id: number; opportunityId: number }) =>
       api.delete<{ application: ServiceApplication }>(`/applications/${id}`).then((r) => r.data.application),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', String(variables.opportunityId)] })
