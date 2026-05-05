@@ -7,10 +7,10 @@ import { formatDate } from '../../lib/utils'
 import { ClipboardList } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
-const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default' }> = {
+const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
   pending: { label: 'Pending', variant: 'warning' },
   approved: { label: 'Approved', variant: 'success' },
-  rejected: { label: 'Rejected', variant: 'error' },
+  rejected: { label: 'Rejected', variant: 'danger' },
   withdrawn: { label: 'Withdrawn', variant: 'default' },
 }
 

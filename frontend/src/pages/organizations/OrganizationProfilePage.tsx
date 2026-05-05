@@ -79,8 +79,8 @@ function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
 }
 
 function ApplicationStatusBadge({ status }: { status: string }) {
-  const variants: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    pending: 'warning', approved: 'success', rejected: 'error', withdrawn: 'default',
+  const variants: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+    pending: 'warning', approved: 'success', rejected: 'danger', withdrawn: 'default',
   }
   return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
 }
@@ -203,7 +203,7 @@ function ReferralsPanel({ orgId }: { orgId: number }) {
                   )}
                   {r.message && <p className="mt-0.5 text-gray-600">{r.message}</p>}
                 </div>
-                <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'error' : 'warning'}>
+                <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'danger' : 'warning'}>
                   {r.status}
                 </Badge>
               </CardBody>
@@ -459,7 +459,7 @@ export function OrganizationProfilePage() {
             </Button>
           )}
           {viewerAdminOrg && existingConnection && (
-            <Badge variant={existingConnection.status === 'accepted' ? 'success' : existingConnection.status === 'declined' ? 'error' : 'warning'}>
+            <Badge variant={existingConnection.status === 'accepted' ? 'success' : existingConnection.status === 'declined' ? 'danger' : 'warning'}>
               {existingConnection.status === 'accepted' ? 'Partners' : existingConnection.status === 'declined' ? 'Declined' : 'Partnership Pending'}
             </Badge>
           )}

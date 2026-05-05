@@ -17,10 +17,10 @@ const STATUS_VARIANTS = {
   filled: 'warning',
 } as const
 
-const APPLICATION_STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default'; icon: React.ReactNode }> = {
+const APPLICATION_STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default'; icon: React.ReactNode }> = {
   pending: { label: 'Application Pending', variant: 'warning', icon: <Clock className="h-4 w-4" /> },
   approved: { label: 'Application Approved', variant: 'success', icon: <CheckCircle className="h-4 w-4" /> },
-  rejected: { label: 'Application Rejected', variant: 'error', icon: <XCircle className="h-4 w-4" /> },
+  rejected: { label: 'Application Rejected', variant: 'danger', icon: <XCircle className="h-4 w-4" /> },
   withdrawn: { label: 'Application Withdrawn', variant: 'default', icon: <Undo2 className="h-4 w-4" /> },
 }
 

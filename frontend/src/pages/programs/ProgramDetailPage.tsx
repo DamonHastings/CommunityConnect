@@ -13,14 +13,14 @@ import { PROGRAM_TYPE_LABELS, PROGRAM_STATUS_LABELS, formatDate } from '../../li
 import { Calendar, MapPin, Mail, Building2, ArrowLeft, Users, Pencil, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Undo2, X } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
-const STATUS_VARIANTS: Record<string, 'warning' | 'info' | 'success' | 'default' | 'error'> = {
-  draft: 'warning', published: 'info', active: 'success', completed: 'default', cancelled: 'error',
+const STATUS_VARIANTS: Record<string, 'warning' | 'info' | 'success' | 'default' | 'danger'> = {
+  draft: 'warning', published: 'info', active: 'success', completed: 'default', cancelled: 'danger',
 }
 
-const APP_STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default'; icon: React.ReactNode }> = {
+const APP_STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default'; icon: React.ReactNode }> = {
   pending: { label: 'Application Pending', variant: 'warning', icon: <Clock className="h-4 w-4" /> },
   approved: { label: 'Application Approved', variant: 'success', icon: <CheckCircle className="h-4 w-4" /> },
-  rejected: { label: 'Application Rejected', variant: 'error', icon: <XCircle className="h-4 w-4" /> },
+  rejected: { label: 'Application Rejected', variant: 'danger', icon: <XCircle className="h-4 w-4" /> },
   withdrawn: { label: 'Application Withdrawn', variant: 'default', icon: <Undo2 className="h-4 w-4" /> },
 }
 
@@ -56,7 +56,7 @@ function AdminApplicationsPanel({ programId }: { programId: number }) {
                   <p className="mt-1 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
-                  <Badge variant={app.status === 'pending' ? 'warning' : app.status === 'approved' ? 'success' : app.status === 'rejected' ? 'error' : 'default'}>
+                  <Badge variant={app.status === 'pending' ? 'warning' : app.status === 'approved' ? 'success' : app.status === 'rejected' ? 'danger' : 'default'}>
                     {app.status}
                   </Badge>
                   {app.status === 'pending' && (

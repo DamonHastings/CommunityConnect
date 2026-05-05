@@ -9,13 +9,14 @@ import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
-import { PROFILE_TYPE_LABELS, PROFILE_TYPE_OPTIONS, SPECIALTY_OPTIONS } from '../../lib/utils'
+import { MultiSelectChipInput } from '../../components/ui/MultiSelectChipInput'
+import { PROFILE_TYPE_LABELS, PROFILE_TYPE_OPTIONS, SPECIALTY_OPTIONS, NEEDS_CATEGORY_LABELS } from '../../lib/utils'
 import { Link } from 'react-router-dom'
 import { Building2, Pencil, X, Check } from 'lucide-react'
 import type { ProfileType } from '../../types'
 
 const schema = z.object({
-  profile_type: z.enum(['individual_seeker', 'individual_professional', 'community_org', 'business_service_provider']),
+  profile_type: z.enum(['individual_seeker', 'individual_professional', 'community_org', 'business_service_provider', 'volunteer', 'resource_navigator']),
   bio: z.string().max(500, 'Bio must be 500 characters or less').optional(),
   phone: z.string().optional(),
   city: z.string().optional(),
@@ -23,21 +24,13 @@ const schema = z.object({
   website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
   availability: z.string().optional(),
   specialty: z.string().optional(),
-  communities_served: z.string().optional(),
-  services_offered: z.string().optional(),
-  services_needed: z.string().optional(),
+  communities_served: z.array(z.string()),
+  services_offered: z.array(z.string()),
+  services_needed: z.array(z.string()),
 })
 
 type FormData = z.infer<typeof schema>
 
-function tagsToArray(str: string | undefined): string[] {
-  if (!str) return []
-  return str.split(',').map((s) => s.trim()).filter(Boolean)
-}
-
-function arrayToTags(arr: string[]): string {
-  return arr.join(', ')
-}
 
 export function ProfilePage() {
   const { user, updateProfile } = useAuth()
@@ -55,9 +48,9 @@ export function ProfilePage() {
       website: user?.website ?? '',
       availability: user?.availability ?? '',
       specialty: user?.specialty ?? '',
-      communities_served: arrayToTags(user?.communities_served ?? []),
-      services_offered: arrayToTags(user?.services_offered ?? []),
-      services_needed: arrayToTags(user?.services_needed ?? []),
+      communities_served: user?.communities_served ?? [],
+      services_offered: user?.services_offered ?? [],
+      services_needed: user?.services_needed ?? [],
     },
   })
 
@@ -76,9 +69,9 @@ export function ProfilePage() {
       website: data.website || undefined,
       availability: data.availability || undefined,
       specialty: data.specialty || undefined,
-      communities_served: tagsToArray(data.communities_served),
-      services_offered: tagsToArray(data.services_offered),
-      services_needed: tagsToArray(data.services_needed),
+      communities_served: data.communities_served,
+      services_offered: data.services_offered,
+      services_needed: data.services_needed,
     }
     try {
       await updateProfile(payload)
@@ -98,9 +91,9 @@ export function ProfilePage() {
       website: user.website ?? '',
       availability: user.availability ?? '',
       specialty: user.specialty ?? '',
-      communities_served: arrayToTags(user.communities_served ?? []),
-      services_offered: arrayToTags(user.services_offered),
-      services_needed: arrayToTags(user.services_needed),
+      communities_served: user.communities_served ?? [],
+      services_offered: user.services_offered ?? [],
+      services_needed: user.services_needed ?? [],
     })
     setEditing(false)
     setServerError(null)
@@ -191,10 +184,18 @@ export function ProfilePage() {
                   ]}
                   {...register('specialty')}
                 />
-                <Input
-                  label="Communities served"
-                  placeholder="e.g. low-income families, veterans, immigrants (comma-separated)"
-                  {...register('communities_served')}
+                <Controller
+                  name="communities_served"
+                  control={control}
+                  render={({ field }) => (
+                    <MultiSelectChipInput
+                      label="Communities served"
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      placeholder="Type and press Enter to add…"
+                      error={errors.communities_served?.message}
+                    />
+                  )}
                 />
               </CardBody>
             </Card>
@@ -203,15 +204,33 @@ export function ProfilePage() {
           <Card>
             <CardHeader>Services &amp; availability</CardHeader>
             <CardBody className="space-y-4">
-              <Input
-                label="Services offered"
-                placeholder="e.g. mentorship, grant writing, legal aid (comma-separated)"
-                {...register('services_offered')}
+              <Controller
+                name="services_offered"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelectChipInput
+                    label="Services offered"
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    options={SPECIALTY_OPTIONS}
+                    placeholder="Select or type a service…"
+                    error={errors.services_offered?.message}
+                  />
+                )}
               />
-              <Input
-                label="Services needed"
-                placeholder="e.g. housing support, childcare, job training (comma-separated)"
-                {...register('services_needed')}
+              <Controller
+                name="services_needed"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelectChipInput
+                    label="Services needed"
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    options={Object.values(NEEDS_CATEGORY_LABELS)}
+                    placeholder="Select or type a need…"
+                    error={errors.services_needed?.message}
+                  />
+                )}
               />
               <Select
                 label="Availability"

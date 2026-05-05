@@ -12,10 +12,10 @@ import { formatDate } from '../../lib/utils'
 import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck } from 'lucide-react'
 import type { ApplicationStatus } from '../../types'
 
-const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'default' }> = {
+const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
   pending: { label: 'Pending', variant: 'warning' },
   approved: { label: 'Connected', variant: 'success' },
-  rejected: { label: 'Rejected', variant: 'error' },
+  rejected: { label: 'Rejected', variant: 'danger' },
   withdrawn: { label: 'Withdrawn', variant: 'default' },
 }
 
@@ -231,7 +231,7 @@ export function MyServicesPage() {
                         <p className="mt-0.5 text-xs text-gray-400">{formatDate(r.created_at)}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-2">
-                        <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'error' : 'warning'}>
+                        <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'danger' : 'warning'}>
                           {r.status}
                         </Badge>
                         {r.status === 'pending' && (

@@ -20,8 +20,8 @@ import type { EngagementOpportunity } from '../../types'
 /* ── Applications panel ─────────────────────────────────────────────────── */
 
 function ApplicationStatusBadge({ status }: { status: string }) {
-  const variants: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    pending: 'warning', approved: 'success', rejected: 'error', withdrawn: 'default',
+  const variants: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+    pending: 'warning', approved: 'success', rejected: 'danger', withdrawn: 'default',
   }
   return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
 }
@@ -329,7 +329,7 @@ function ReferralsTab({ orgId }: { orgId: number }) {
                     {r.message && <p className="mt-1 text-gray-600">{r.message}</p>}
                     <p className="mt-1 text-xs text-gray-400">{formatDate(r.created_at)}</p>
                   </div>
-                  <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'error' : 'warning'}>
+                  <Badge variant={r.status === 'accepted' ? 'success' : r.status === 'declined' ? 'danger' : 'warning'}>
                     {r.status}
                   </Badge>
                 </div>
