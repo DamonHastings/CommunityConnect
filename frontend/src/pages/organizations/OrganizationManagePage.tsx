@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useOrganization } from '../../hooks/useOrganizations'
+import { useOrganization, useOrganizations } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
 import { useOrganizationPrograms } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
+import { useProgramApplications, useUpdateProgramApplication } from '../../hooks/useProgramApplications'
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useOrgConnections, useUpdateConnectionRequest } from '../../hooks/usePartnerConnections'
 import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
@@ -15,7 +16,7 @@ import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { formatDate } from '../../lib/utils'
 import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users } from 'lucide-react'
-import type { EngagementOpportunity } from '../../types'
+import type { EngagementOpportunity, Program } from '../../types'
 
 /* ── Applications panel ─────────────────────────────────────────────────── */
 
@@ -71,46 +72,123 @@ function OppApplicationsList({ opp }: { opp: EngagementOpportunity }) {
   )
 }
 
+function ProgApplicationsList({ program }: { program: Program }) {
+  const { data, isLoading } = useProgramApplications(program.id)
+  const update = useUpdateProgramApplication()
+  const apps = data?.applications ?? []
+  if (isLoading) return <p className="text-sm text-muted py-2">Loading applications…</p>
+  if (apps.length === 0) return <p className="text-sm text-muted py-2">No applications for this program.</p>
+
+  return (
+    <div className="space-y-2 mt-2">
+      {apps.map((app) => (
+        <div key={app.id} className="rounded-lg border border-border bg-bg px-3 py-2 text-sm">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="font-medium text-heading">{app.applicant.name}</p>
+              <p className="text-muted text-xs">{app.applicant.email}</p>
+              {app.message && <p className="mt-1 text-secondary line-clamp-2">{app.message}</p>}
+              <p className="mt-1 text-xs text-muted">Applied {formatDate(app.created_at)}</p>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <ApplicationStatusBadge status={app.status} />
+              {app.status === 'pending' && (
+                <div className="flex gap-1">
+                  <Button size="sm" variant="outline" disabled={update.isPending}
+                    onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
+                    <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                    Approve
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={update.isPending}
+                    onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
+                    <XCircle className="mr-1 h-3.5 w-3.5" />
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ApplicationsTab({ orgId }: { orgId: number }) {
   const { data: oppsData } = useOrganizationOpportunities(orgId)
+  const { data: progsData } = useOrganizationPrograms(orgId)
   const opps = oppsData?.opportunities ?? []
-  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const programs = progsData?.programs ?? []
+  const [expandedOppId, setExpandedOppId] = useState<number | null>(null)
+  const [expandedProgId, setExpandedProgId] = useState<number | null>(null)
 
-  if (opps.length === 0) {
+  const hasOpps = opps.length > 0
+  const hasProgs = programs.length > 0
+
+  if (!hasOpps && !hasProgs) {
     return (
       <Card>
-        <CardBody className="py-10 text-center text-gray-500">
-          No opportunities yet. Create one to start receiving applications.
+        <CardBody className="py-10 text-center text-muted">
+          No opportunities or programs yet. Create one to start receiving applications.
         </CardBody>
       </Card>
     )
   }
 
   return (
-    <div className="space-y-3">
-      {opps.map((opp) => (
-        <Card key={opp.id}>
-          <CardBody>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{opp.title}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant={opp.status === 'open' ? 'success' : 'default'}>{opp.status}</Badge>
-                  <Badge variant="info">{opp.opportunity_type}</Badge>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setExpandedId(expandedId === opp.id ? null : opp.id)}
-              >
-                {expandedId === opp.id ? 'Collapse' : 'View applications'}
-              </Button>
-            </div>
-            {expandedId === opp.id && <OppApplicationsList opp={opp} />}
-          </CardBody>
-        </Card>
-      ))}
+    <div className="space-y-8">
+      {hasOpps && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Service Applications</h3>
+          <div className="space-y-3">
+            {opps.map((opp) => (
+              <Card key={opp.id}>
+                <CardBody>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-heading">{opp.title}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant={opp.status === 'open' ? 'success' : 'default'}>{opp.status}</Badge>
+                        <Badge variant="info">{opp.opportunity_type}</Badge>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm"
+                      onClick={() => setExpandedOppId(expandedOppId === opp.id ? null : opp.id)}>
+                      {expandedOppId === opp.id ? 'Collapse' : 'View applications'}
+                    </Button>
+                  </div>
+                  {expandedOppId === opp.id && <OppApplicationsList opp={opp} />}
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hasProgs && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Program Applications</h3>
+          <div className="space-y-3">
+            {programs.map((prog) => (
+              <Card key={prog.id}>
+                <CardBody>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-heading">{prog.title}</p>
+                      <p className="text-xs text-muted mt-0.5">{prog.status}</p>
+                    </div>
+                    <Button variant="outline" size="sm"
+                      onClick={() => setExpandedProgId(expandedProgId === prog.id ? null : prog.id)}>
+                      {expandedProgId === prog.id ? 'Collapse' : 'View applications'}
+                    </Button>
+                  </div>
+                  {expandedProgId === prog.id && <ProgApplicationsList program={prog} />}
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -252,19 +330,32 @@ function PartnersTab({ orgId }: { orgId: number }) {
 
 /* ── Referrals tab ──────────────────────────────────────────────────────── */
 
+type TargetType = 'none' | 'program' | 'organization'
+
 function ReferralsTab({ orgId }: { orgId: number }) {
   const { data } = useOrgReferrals(orgId)
+  const { data: progsData } = useOrganizationPrograms(orgId)
   const send = useSendReferral(orgId)
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [targetType, setTargetType] = useState<TargetType>('none')
+  const [targetId, setTargetId] = useState<number | undefined>(undefined)
+  const [orgSearch, setOrgSearch] = useState('')
+  const { data: orgSearchData } = useOrganizations({ q: orgSearch })
+  const programs = progsData?.programs ?? []
   const referrals = data?.referrals ?? []
+
+  const resetForm = () => {
+    setEmail(''); setMessage(''); setTargetType('none'); setTargetId(undefined); setOrgSearch('')
+  }
 
   const handleSend = () => {
     if (!email.trim()) return
-    send.mutate({ referred_user_email: email, message }, {
-      onSuccess: () => { setEmail(''); setMessage(''); setShowForm(false) },
-    })
+    send.mutate(
+      { referred_user_email: email, message, target_type: targetType !== 'none' ? targetType : undefined, target_id: targetId },
+      { onSuccess: () => { resetForm(); setShowForm(false) } }
+    )
   }
 
   return (
@@ -281,29 +372,96 @@ function ReferralsTab({ orgId }: { orgId: number }) {
           <CardHeader>Send a referral</CardHeader>
           <CardBody className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">User email</label>
+              <label className="mb-1 block text-sm font-medium text-secondary">User email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-surface text-heading"
               />
             </div>
+
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Message (optional)</label>
+              <label className="mb-1 block text-sm font-medium text-secondary">Refer to (optional)</label>
+              <div className="flex gap-2">
+                {(['none', 'program', 'organization'] as TargetType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => { setTargetType(t); setTargetId(undefined); setOrgSearch('') }}
+                    className={`rounded-full px-3 py-1 text-xs font-medium border transition ${
+                      targetType === t
+                        ? 'bg-primary text-white border-primary'
+                        : 'border-border text-secondary hover:border-primary hover:text-primary'
+                    }`}
+                  >
+                    {t === 'none' ? 'None' : t === 'program' ? 'Program' : 'Organization'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {targetType === 'program' && (
+              <div>
+                <label className="mb-1 block text-sm font-medium text-secondary">Select program</label>
+                <select
+                  value={targetId ?? ''}
+                  onChange={(e) => setTargetId(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none bg-surface text-heading"
+                >
+                  <option value="">— choose a program —</option>
+                  {programs.map((p) => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {targetType === 'organization' && (
+              <div>
+                <label className="mb-1 block text-sm font-medium text-secondary">Search organization</label>
+                <input
+                  type="text"
+                  value={orgSearch}
+                  onChange={(e) => { setOrgSearch(e.target.value); setTargetId(undefined) }}
+                  placeholder="Type org name…"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none bg-surface text-heading"
+                />
+                {orgSearch.length >= 2 && (
+                  <div className="mt-1 rounded-lg border border-border bg-surface shadow-dropdown max-h-40 overflow-y-auto">
+                    {(orgSearchData?.organizations ?? []).slice(0, 8).map((org) => (
+                      <button
+                        key={org.id}
+                        type="button"
+                        onClick={() => { setTargetId(org.id); setOrgSearch(org.name) }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-bg transition ${targetId === org.id ? 'text-primary font-medium' : 'text-heading'}`}
+                      >
+                        {org.name}
+                      </button>
+                    ))}
+                    {(orgSearchData?.organizations ?? []).length === 0 && (
+                      <p className="px-3 py-2 text-sm text-muted">No organizations found.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-secondary">Message (optional)</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none bg-surface text-heading"
               />
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSend} disabled={!email.trim() || send.isPending} size="sm">
                 {send.isPending ? 'Sending…' : 'Send'}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="outline" size="sm" onClick={() => { resetForm(); setShowForm(false) }}>Cancel</Button>
             </div>
           </CardBody>
         </Card>

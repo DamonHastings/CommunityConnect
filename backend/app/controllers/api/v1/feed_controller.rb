@@ -129,7 +129,7 @@ class Api::V1::FeedController < ApplicationController
             body: "#{pc.requester_org.name} wants to connect as a partner.",
             org_name: pc.requester_org.name,
             org_id: pc.requester_org_id,
-            url: "/organizations/#{pc.target_org_id}/manage",
+            url: "/organizations/#{pc.requester_org_id}",
             tag: "yours",
             created_at: pc.created_at,
           }
