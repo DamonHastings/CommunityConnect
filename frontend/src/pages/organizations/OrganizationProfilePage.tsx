@@ -16,6 +16,7 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
+import { ReferClientForm } from '../../components/referrals/ReferClientForm'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
 import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
@@ -381,6 +382,11 @@ export function OrganizationProfilePage() {
   const isAdmin = user?.organizations.some((m) => m.id === org.id && m.role === 'admin')
   const isMemberNavigator = user?.profile_type === 'resource_navigator' && user?.organizations.some((m) => m.id === org.id)
   const canSendReferrals = isAdmin || isMemberNavigator
+  // Any navigator with an org can refer a client to this org, even if not a member
+  const navigatorOrg = user?.profile_type === 'resource_navigator'
+    ? (user.organizations.find((m) => m.role === 'admin') ?? user.organizations[0])
+    : null
+  const canReferToHere = navigatorOrg && !isAdmin && org.id !== navigatorOrg.id
   const isPlatformAdmin = user?.platform_admin ?? false
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
@@ -462,6 +468,14 @@ export function OrganizationProfilePage() {
             <Badge variant={existingConnection.status === 'accepted' ? 'success' : existingConnection.status === 'declined' ? 'danger' : 'warning'}>
               {existingConnection.status === 'accepted' ? 'Partners' : existingConnection.status === 'declined' ? 'Declined' : 'Partnership Pending'}
             </Badge>
+          )}
+          {canReferToHere && navigatorOrg && (
+            <ReferClientForm
+              senderOrgId={navigatorOrg.id}
+              targetType="Organization"
+              targetId={org.id}
+              targetName={org.name}
+            />
           )}
           {isAdmin && (
             <>

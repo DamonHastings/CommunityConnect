@@ -7,10 +7,11 @@ import { useMyReferrals, useUpdateReferral } from '../../hooks/useReferrals'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
 import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck } from 'lucide-react'
-import type { ApplicationStatus } from '../../types'
+import type { ApplicationStatus, ServiceApplication, ProgramApplication } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
   pending: { label: 'Pending', variant: 'warning' },
@@ -31,6 +32,8 @@ function StatCard({ value, label, icon }: { value: number; label: string; icon: 
 
 export function MyServicesPage() {
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [pendingWithdraw, setPendingWithdraw] = useState<ServiceApplication | null>(null)
+  const [pendingWithdrawProgram, setPendingWithdrawProgram] = useState<ProgramApplication | null>(null)
   const { data: appsData, isLoading: appsLoading } = useMyApplications()
   const { data: progAppsData, isLoading: progAppsLoading } = useMyProgramApplications()
   const { data: savedData, isLoading: savedLoading } = useSavedOrganizations()
@@ -58,9 +61,38 @@ export function MyServicesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">My Services</h1>
-        <p className="mt-1 text-gray-600">Track your applications, connections, and saved organizations.</p>
+        <h1 className="text-3xl font-bold text-heading">My Services</h1>
+        <p className="mt-1 text-secondary">Track your applications, connections, and saved organizations.</p>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingWithdraw}
+        title="Withdraw application?"
+        message="This cannot be undone. The organization will no longer see your application."
+        confirmLabel="Withdraw"
+        danger
+        onConfirm={() => {
+          if (pendingWithdraw) {
+            withdraw.mutate({ id: pendingWithdraw.id, opportunityId: pendingWithdraw.opportunity.id })
+            setPendingWithdraw(null)
+          }
+        }}
+        onCancel={() => setPendingWithdraw(null)}
+      />
+      <ConfirmDialog
+        open={!!pendingWithdrawProgram}
+        title="Withdraw program application?"
+        message="This cannot be undone. The organization will no longer see your application."
+        confirmLabel="Withdraw"
+        danger
+        onConfirm={() => {
+          if (pendingWithdrawProgram) {
+            withdrawProgram.mutate({ id: pendingWithdrawProgram.id, programId: pendingWithdrawProgram.program.id })
+            setPendingWithdrawProgram(null)
+          }
+        }}
+        onCancel={() => setPendingWithdrawProgram(null)}
+      />
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -120,8 +152,7 @@ export function MyServicesPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              disabled={withdraw.isPending}
-                              onClick={() => withdraw.mutate({ id: app.id, opportunityId: app.opportunity.id })}
+                              onClick={() => setPendingWithdraw(app)}
                             >
                               Withdraw
                             </Button>
@@ -166,8 +197,8 @@ export function MyServicesPage() {
                           <div className="flex shrink-0 flex-col items-end gap-2">
                             <Badge variant={cfg.variant}>{cfg.label}</Badge>
                             {app.status === 'pending' && (
-                              <Button size="sm" variant="outline" disabled={withdrawProgram.isPending}
-                                onClick={() => withdrawProgram.mutate({ id: app.id, programId: app.program.id })}>
+                              <Button size="sm" variant="outline"
+                                onClick={() => setPendingWithdrawProgram(app)}>
                                 Withdraw
                               </Button>
                             )}

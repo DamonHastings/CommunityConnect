@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyApplications, useWithdrawApplication } from '../../hooks/useApplications'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { formatDate } from '../../lib/utils'
 import { ClipboardList } from 'lucide-react'
-import type { ApplicationStatus } from '../../types'
+import type { ApplicationStatus, ServiceApplication } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
   pending: { label: 'Pending', variant: 'warning' },
@@ -18,25 +20,41 @@ export function MyApplicationsPage() {
   const { data, isLoading } = useMyApplications()
   const withdraw = useWithdrawApplication()
   const applications = data?.applications ?? []
+  const [pendingWithdraw, setPendingWithdraw] = useState<ServiceApplication | null>(null)
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-        <p className="mt-1 text-gray-600">Track the status of opportunities you've applied to.</p>
+        <h1 className="text-3xl font-bold text-heading">My Applications</h1>
+        <p className="mt-1 text-secondary">Track the status of opportunities you've applied to.</p>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingWithdraw}
+        title="Withdraw application?"
+        message="This cannot be undone. The organization will no longer see your application."
+        confirmLabel="Withdraw"
+        danger
+        onConfirm={() => {
+          if (pendingWithdraw) {
+            withdraw.mutate({ id: pendingWithdraw.id, opportunityId: pendingWithdraw.opportunity.id })
+            setPendingWithdraw(null)
+          }
+        }}
+        onCancel={() => setPendingWithdraw(null)}
+      />
 
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl bg-gray-200" />
+            <div key={i} className="h-20 animate-pulse rounded-xl bg-border" />
           ))}
         </div>
       ) : applications.length === 0 ? (
         <Card>
           <CardBody className="py-12 text-center">
-            <ClipboardList className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-gray-500">You haven't applied to any opportunities yet.</p>
+            <ClipboardList className="mx-auto mb-3 h-10 w-10 text-muted" />
+            <p className="text-secondary">You haven't applied to any opportunities yet.</p>
             <Link to="/opportunities" className="mt-3 inline-block">
               <Button size="sm" variant="outline">Browse opportunities</Button>
             </Link>
@@ -52,22 +70,22 @@ export function MyApplicationsPage() {
                   <div className="min-w-0">
                     <Link
                       to={`/opportunities/${app.opportunity.id}`}
-                      className="font-semibold text-gray-900 hover:text-indigo-600"
+                      className="font-semibold text-heading hover:text-primary"
                     >
                       {app.opportunity.title}
                     </Link>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-secondary">
                       <Link
                         to={`/organizations/${app.opportunity.organization.id}`}
-                        className="hover:text-indigo-600"
+                        className="hover:text-primary"
                       >
                         {app.opportunity.organization.name}
                       </Link>
                     </p>
                     {app.message && (
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-1">{app.message}</p>
+                      <p className="mt-1 text-sm text-secondary line-clamp-1">{app.message}</p>
                     )}
-                    <p className="mt-1 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                    <p className="mt-1 text-xs text-muted">Applied {formatDate(app.created_at)}</p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <Badge variant={config.variant}>{config.label}</Badge>
@@ -76,9 +94,7 @@ export function MyApplicationsPage() {
                         size="sm"
                         variant="outline"
                         disabled={withdraw.isPending}
-                        onClick={() =>
-                          withdraw.mutate({ id: app.id, opportunityId: app.opportunity.id })
-                        }
+                        onClick={() => setPendingWithdraw(app)}
                       >
                         Withdraw
                       </Button>

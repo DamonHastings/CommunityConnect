@@ -20,6 +20,7 @@ import {
   Building2, Briefcase, Plus, Users, Sparkles, ClipboardList, Bookmark,
   Clock, CheckCircle, MessageSquare, UserCheck, ArrowRight, Search,
   Send, RefreshCw, Activity, BookOpen, Megaphone, Handshake, ArrowRightLeft,
+  X, ListChecks,
 } from 'lucide-react'
 
 /* ── Feed type definitions ──────────────────────────────────────────────── */
@@ -465,6 +466,76 @@ function NavigatorSection() {
   )
 }
 
+/* ── Onboarding checklist ───────────────────────────────────────────────── */
+
+const ONBOARDING_DISMISSED_KEY = 'onboarding_checklist_dismissed'
+
+function OnboardingChecklist() {
+  const { user } = useAuth()
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(ONBOARDING_DISMISSED_KEY) === 'true')
+
+  if (!user || dismissed) return null
+  if (user.profile_type !== 'volunteer' && user.profile_type !== 'resource_navigator') return null
+  if (user.intake_completed === true) return null
+
+  const isNavigator = user.profile_type === 'resource_navigator'
+  const hasOrg = user.organizations.length > 0
+  const profileComplete = !!(user.bio && (user.city || user.state))
+
+  const steps = isNavigator
+    ? [
+        { label: 'Complete your profile', done: profileComplete, to: '/profile' },
+        { label: 'Create or join an organization', done: hasOrg, to: '/organizations/new' },
+        { label: 'Explore programs to refer clients', done: false, to: '/programs' },
+      ]
+    : [
+        { label: 'Complete your profile', done: profileComplete, to: '/profile' },
+        { label: 'Browse volunteer opportunities', done: false, to: '/volunteer-opportunities' },
+        { label: 'Apply to an opportunity', done: false, to: '/volunteer-opportunities' },
+      ]
+
+  const doneCount = steps.filter((s) => s.done).length
+  const allDone = doneCount === steps.length
+
+  const dismiss = () => {
+    localStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true')
+    setDismissed(true)
+  }
+
+  return (
+    <Card>
+      <CardBody>
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <ListChecks className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold text-heading">Getting started</p>
+          </div>
+          <button onClick={dismiss} className="text-muted hover:text-heading" aria-label="Dismiss">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <p className="mb-3 text-xs text-muted">{doneCount}/{steps.length} complete</p>
+        <div className="space-y-2">
+          {steps.map((step) => (
+            <Link
+              key={step.label}
+              to={step.done ? '#' : step.to}
+              onClick={step.done ? (e) => e.preventDefault() : undefined}
+              className={`flex items-center gap-2 text-xs ${step.done ? 'text-muted pointer-events-none' : 'text-heading hover:text-primary'}`}
+            >
+              <CheckCircle className={`h-3.5 w-3.5 shrink-0 ${step.done ? 'text-success-text' : 'text-border'}`} />
+              <span className={step.done ? 'line-through' : ''}>{step.label}</span>
+            </Link>
+          ))}
+        </div>
+        {allDone && (
+          <p className="mt-3 text-xs font-medium text-success-text">You're all set!</p>
+        )}
+      </CardBody>
+    </Card>
+  )
+}
+
 /* ── My Organizations section ───────────────────────────────────────────── */
 
 function MyOrganizationsSection() {
@@ -564,9 +635,15 @@ function RightSidebar() {
     <div className="space-y-4">
       {showSeeker && <SeekerSection />}
       {isProfessional && <ProfessionalSection />}
-      {isVolunteer && <VolunteerSection />}
+      {isVolunteer && (
+        <>
+          <OnboardingChecklist />
+          <VolunteerSection />
+        </>
+      )}
       {isNavigator && (
         <>
+          <OnboardingChecklist />
           <NavigatorSection />
           <MyOrganizationsSection />
         </>

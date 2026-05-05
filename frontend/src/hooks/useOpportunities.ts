@@ -5,6 +5,7 @@ import type { EngagementOpportunity, PaginationMeta } from '../types'
 interface OpportunityFilters {
   type?: string
   status?: string
+  remote?: boolean
   organization_id?: number | string
   page?: number
 }

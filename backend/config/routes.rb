@@ -22,7 +22,9 @@ Rails.application.routes.draw do
 
       get "matches", to: "matches#show"
 
-      resources :users, only: [:show]
+      resources :users, only: [:show] do
+        collection { get :search }
+      end
       get 'professionals', to: 'professionals#index'
 
       resources :organizations do

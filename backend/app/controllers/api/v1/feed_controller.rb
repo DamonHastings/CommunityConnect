@@ -155,6 +155,28 @@ class Api::V1::FeedController < ApplicationController
         }
       end
 
+    # Referral acceptances visible to the referring org's members
+    if user_org_ids.any?
+      Referral
+        .where(referring_org_id: user_org_ids, status: :accepted)
+        .where("updated_at > ?", LOOKBACK.ago)
+        .includes(:referred_user, :referring_org)
+        .each do |ref|
+          recipient_name = "#{ref.referred_user.first_name} #{ref.referred_user.last_name}".strip
+          items << {
+            type: "referral",
+            id: "referral_accepted_#{ref.id}",
+            title: "Referral Accepted",
+            body: "#{recipient_name} accepted your referral.",
+            org_name: ref.referring_org.name,
+            org_id: ref.referring_org_id,
+            url: "/my-services",
+            tag: "yours",
+            created_at: ref.updated_at,
+          }
+        end
+    end
+
     # Sort: "yours" and connected items first within each time bucket, then by recency
     sorted = items.sort_by do |item|
       priority = case item[:tag]

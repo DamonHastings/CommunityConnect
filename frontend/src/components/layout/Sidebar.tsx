@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConversations } from '../../hooks/useMessages'
-import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity } from 'lucide-react'
+import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity, HandHeart } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, authOnly: true },
@@ -50,6 +50,12 @@ export function Sidebar() {
               {label}
             </Link>
           ))}
+        {user?.profile_type === 'volunteer' && (
+          <Link to="/volunteer-opportunities" className={linkClass('/volunteer-opportunities')}>
+            <HandHeart className="h-4 w-4 shrink-0" />
+            Volunteer Roles
+          </Link>
+        )}
         {user && (
           <Link
             to="/messages"

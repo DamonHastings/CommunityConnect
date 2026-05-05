@@ -8,6 +8,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
+import { ReferClientForm } from '../../components/referrals/ReferClientForm'
 import { Select } from '../../components/ui/Select'
 import { PROGRAM_TYPE_LABELS, PROGRAM_STATUS_LABELS, formatDate } from '../../lib/utils'
 import { Calendar, MapPin, Mail, Building2, ArrowLeft, Users, Pencil, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Undo2, X } from 'lucide-react'
@@ -148,6 +150,7 @@ export function ProgramDetailPage() {
   const { data: program, isLoading } = useProgram(id)
   const [message, setMessage] = useState('')
   const [applyOpen, setApplyOpen] = useState(false)
+  const [withdrawConfirm, setWithdrawConfirm] = useState(false)
 
   const apply = useApplyToProgram(Number(id))
   const withdraw = useWithdrawProgramApplication()
@@ -159,6 +162,9 @@ export function ProgramDetailPage() {
   const isAdmin = user?.organizations.some((m) => coOrgs.some((o) => o.id === m.id) && m.role === 'admin')
   const myApp = program.my_application
   const canApply = user && program.applications_open && !myApp && !isAdmin
+  const navigatorOrg = user?.profile_type === 'resource_navigator'
+    ? (user.organizations.find((m) => m.role === 'admin') ?? user.organizations[0])
+    : null
 
   const handleApply = () => {
     apply.mutate(message, {
@@ -166,8 +172,22 @@ export function ProgramDetailPage() {
     })
   }
 
+  const windowClosed = !program.applications_open && !myApp && !isAdmin && !!user
+
   return (
     <div className="mx-auto max-w-2xl">
+      <ConfirmDialog
+        open={withdrawConfirm}
+        title="Withdraw application?"
+        message="This cannot be undone. The organization will no longer see your application."
+        confirmLabel="Withdraw"
+        danger
+        onConfirm={() => {
+          if (myApp) withdraw.mutate({ id: myApp.id, programId: Number(id) })
+          setWithdrawConfirm(false)
+        }}
+        onCancel={() => setWithdrawConfirm(false)}
+      />
       <Link to="/programs" className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900">
         <ArrowLeft className="h-4 w-4" /> Back to programs
       </Link>
@@ -282,10 +302,16 @@ export function ProgramDetailPage() {
                   </div>
                   {myApp.status === 'pending' && (
                     <Button variant="outline" size="sm"
-                      disabled={withdraw.isPending}
-                      onClick={() => withdraw.mutate({ id: myApp.id, programId: Number(id) })}>
+                      onClick={() => setWithdrawConfirm(true)}>
                       Withdraw
                     </Button>
+                  )}
+                </div>
+              ) : windowClosed ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="default">Applications closed</Badge>
+                  {program.application_closes_at && (
+                    <span className="text-xs text-muted">Closed {formatDate(program.application_closes_at)}</span>
                   )}
                 </div>
               ) : canApply ? (
@@ -315,6 +341,17 @@ export function ProgramDetailPage() {
                   <Button onClick={() => setApplyOpen(true)}>Apply to this program</Button>
                 )
               ) : null}
+            </div>
+          )}
+
+          {navigatorOrg && !isAdmin && (
+            <div className="border-t pt-4">
+              <ReferClientForm
+                senderOrgId={navigatorOrg.id}
+                targetType="Program"
+                targetId={Number(id)}
+                targetName={program.title}
+              />
             </div>
           )}
 

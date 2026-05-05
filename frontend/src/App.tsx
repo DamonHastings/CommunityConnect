@@ -24,6 +24,7 @@ import { ProfessionalsPage } from './pages/professionals/ProfessionalsPage'
 import { MessagesPage } from './pages/messages/MessagesPage'
 import { ConversationPage } from './pages/messages/ConversationPage'
 import { FeedPage } from './pages/feed/FeedPage'
+import { VolunteerOpportunitiesPage } from './pages/opportunities/VolunteerOpportunitiesPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/programs/:id" element={<ProgramDetailPage />} />
         <Route path="/opportunities" element={<OpportunitiesPage />} />
         <Route path="/opportunities/:id" element={<OpportunityDetailPage />} />
+        <Route path="/volunteer-opportunities" element={<RequireAuth><VolunteerOpportunitiesPage /></RequireAuth>} />
 
         <Route path="/users/:id" element={<UserProfilePage />} />
         <Route path="/professionals" element={<ProfessionalsPage />} />
