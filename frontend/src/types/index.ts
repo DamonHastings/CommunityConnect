@@ -272,6 +272,24 @@ export interface PartnerConnection {
   created_at: string
 }
 
+export type NotificationType =
+  | 'new_message'
+  | 'application_update'
+  | 'referral_received'
+  | 'partner_request'
+  | 'referral_accepted'
+
+export interface Notification {
+  id: number
+  notification_type: NotificationType
+  title: string
+  body: string | null
+  url: string
+  actor_name: string | null
+  read_at: string | null
+  created_at: string
+}
+
 export interface ApiError {
   error?: string
   errors?: string[]

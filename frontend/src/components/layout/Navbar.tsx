@@ -1,28 +1,30 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import { Button } from '../ui/Button'
+import { Link, useNavigate } from "react-router-dom";
+import ancchorBrand from "../../assets/ancchor-brand-circle.svg";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/Button";
+import { NotificationBell } from "./NotificationBell";
 
 export function Navbar() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout()
-    navigate('/')
-  }
+    await logout();
+    navigate("/");
+  };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
-      <div className="flex h-14 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-indigo-600 text-lg">
-          <span className="text-2xl">🤝</span>
-          CommunityConnect
+    <header className="sticky top-0 z-50 border-b border-border bg-surface">
+      <div className="flex h-16 items-center justify-between px-4">
+        <Link to="/" className="flex items-center">
+          <img src={ancchorBrand} alt="Ancchor" className="h-12 w-auto" />
         </Link>
 
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <Link to="/profile" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <NotificationBell />
+              <Link to="/profile" className="text-sm font-medium text-secondary hover:text-heading">
                 {user.full_name}
               </Link>
               <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -32,7 +34,9 @@ export function Navbar() {
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost" size="sm">Log in</Button>
+                <Button variant="ghost" size="sm">
+                  Log in
+                </Button>
               </Link>
               <Link to="/register">
                 <Button size="sm">Sign up</Button>
@@ -42,5 +46,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }
