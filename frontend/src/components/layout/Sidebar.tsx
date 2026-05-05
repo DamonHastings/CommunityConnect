@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConversations } from '../../hooks/useMessages'
-import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity, HandHeart } from 'lucide-react'
+import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity, HandHeart, ChevronDown } from 'lucide-react'
+
+const ACTIVE_ORG_KEY = 'active_org_id'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, authOnly: true },
@@ -19,6 +22,30 @@ export function Sidebar() {
   const location = useLocation()
   const { data: convsData } = useConversations(!!user)
   const totalUnread = (convsData?.conversations ?? []).reduce((sum, c) => sum + c.unread_count, 0)
+
+  const orgs = user?.organizations ?? []
+  const showOrgContext =
+    !!user &&
+    (user.profile_type === 'resource_navigator' ||
+     user.profile_type === 'community_org' ||
+     user.profile_type === 'business_service_provider') &&
+    orgs.length > 0
+
+  const [activeOrgId, setActiveOrgId] = useState<number>(() => {
+    const stored = localStorage.getItem(ACTIVE_ORG_KEY)
+    const storedNum = stored ? Number(stored) : null
+    const first = orgs[0]?.id ?? 0
+    return storedNum && orgs.some((o) => o.id === storedNum) ? storedNum : first
+  })
+  const [orgPickerOpen, setOrgPickerOpen] = useState(false)
+
+  const activeOrg = orgs.find((o) => o.id === activeOrgId) ?? orgs[0]
+
+  const selectOrg = (id: number) => {
+    setActiveOrgId(id)
+    localStorage.setItem(ACTIVE_ORG_KEY, String(id))
+    setOrgPickerOpen(false)
+  }
 
   const isIntakeGated =
     user?.profile_type === 'individual_seeker' &&
@@ -71,6 +98,47 @@ export function Sidebar() {
           </Link>
         )}
       </nav>
+
+      {showOrgContext && activeOrg && (
+        <div className="mt-auto border-t border-border p-3">
+          {orgs.length > 1 ? (
+            <div className="relative">
+              <button
+                onClick={() => setOrgPickerOpen((v) => !v)}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-bg transition-colors"
+              >
+                <Building2 className="h-4 w-4 shrink-0 text-muted" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-heading">{activeOrg.name}</p>
+                  <p className="text-[10px] text-muted capitalize">{activeOrg.role}</p>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted" />
+              </button>
+              {orgPickerOpen && (
+                <div className="absolute bottom-full left-0 mb-1 w-full rounded-lg border border-border bg-surface shadow-dropdown">
+                  {orgs.map((org) => (
+                    <button
+                      key={org.id}
+                      onClick={() => selectOrg(org.id)}
+                      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-bg transition-colors first:rounded-t-lg last:rounded-b-lg ${org.id === activeOrgId ? 'text-primary font-medium' : 'text-heading'}`}
+                    >
+                      {org.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to={`/organizations/${activeOrg.id}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-bg transition-colors">
+              <Building2 className="h-4 w-4 shrink-0 text-muted" />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium text-heading">{activeOrg.name}</p>
+                <p className="text-[10px] text-muted capitalize">{activeOrg.role}</p>
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
     </aside>
   )
 }

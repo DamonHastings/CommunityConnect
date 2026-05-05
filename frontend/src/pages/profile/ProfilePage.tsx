@@ -12,7 +12,7 @@ import { Badge } from '../../components/ui/Badge'
 import { MultiSelectChipInput } from '../../components/ui/MultiSelectChipInput'
 import { PROFILE_TYPE_LABELS, PROFILE_TYPE_OPTIONS, SPECIALTY_OPTIONS, NEEDS_CATEGORY_LABELS } from '../../lib/utils'
 import { Link } from 'react-router-dom'
-import { Building2, Pencil, X, Check } from 'lucide-react'
+import { Building2, Pencil, X, Check, RefreshCw } from 'lucide-react'
 import type { ProfileType } from '../../types'
 
 const schema = z.object({
@@ -107,10 +107,20 @@ export function ProfilePage() {
           <p className="mt-1 text-gray-500">{user.email}</p>
         </div>
         {!editing && (
-          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            <Pencil className="mr-1.5 h-4 w-4" />
-            Edit profile
-          </Button>
+          <div className="flex items-center gap-2">
+            {user.profile_type === 'individual_seeker' && user.intake_completed === true && (
+              <Link to="/intake">
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                  Update needs
+                </Button>
+              </Link>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+              <Pencil className="mr-1.5 h-4 w-4" />
+              Edit profile
+            </Button>
+          </div>
         )}
       </div>
 
