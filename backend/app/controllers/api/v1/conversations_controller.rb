@@ -14,6 +14,9 @@ class Api::V1::ConversationsController < ApplicationController
       .find(params[:id])
     authorize conversation
     conversation.mark_read_for!(current_user)
+    current_user.notifications.unread
+      .where(notification_type: :new_message, notifiable: conversation)
+      .update_all(read_at: Time.current)
     render json: {
       conversation: serialize_one(conversation),
       messages: conversation.messages.map { |m| serialize_message(m) }

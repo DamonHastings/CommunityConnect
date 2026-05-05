@@ -56,6 +56,12 @@ Rails.application.routes.draw do
       resources :saved_organizations, only: [:index, :create, :destroy]
       get "feed", to: "feed#index"
 
+      resources :notifications, only: [:index, :update] do
+        collection do
+          patch :read_all
+        end
+      end
+
       resources :conversations, only: [:index, :show, :create] do
         resources :messages, only: [:create]
       end

@@ -21,7 +21,9 @@ class Api::V1::ProgramApplicationsController < ApplicationController
 
   def update
     authorize @application
+    previous_status = @application.status
     if @application.update(update_params)
+      notify_application_status_change(@application, previous_status)
       render json: { application: serialize(@application) }
     else
       render json: { errors: @application.errors.full_messages }, status: :unprocessable_entity
@@ -41,4 +43,22 @@ class Api::V1::ProgramApplicationsController < ApplicationController
   def application_params = params.require(:application).permit(:message)
   def update_params = params.require(:application).permit(:status, :notes)
   def serialize(app) = ProgramApplicationSerializer.new(app).serializable_hash[:data][:attributes]
+
+  def notify_application_status_change(application, previous_status)
+    return if application.status == previous_status
+    return unless %w[approved rejected].include?(application.status)
+
+    prog = application.program
+    org_name = prog.organization&.name || "the organization"
+    status_label = application.status.capitalize
+
+    Notification.create!(
+      user: application.user,
+      notification_type: :application_update,
+      title: "Application #{status_label}",
+      body: "Your application for the \"#{prog.title}\" program was #{application.status}.",
+      url: "/my-services",
+      actor_name: org_name
+    )
+  end
 end

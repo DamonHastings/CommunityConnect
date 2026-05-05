@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :referrals, foreign_key: :referred_user_id, dependent: :destroy
   has_many :conversation_participants, dependent: :destroy
   has_many :conversations, through: :conversation_participants
+  has_many :notifications, dependent: :destroy
 
   enum :profile_type, {
     individual_seeker: 0,

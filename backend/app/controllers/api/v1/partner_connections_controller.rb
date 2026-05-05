@@ -18,6 +18,7 @@ class Api::V1::PartnerConnectionsController < ApplicationController
     )
     authorize connection
     if connection.save
+      notify_partner_request(connection)
       render json: { partner_connection: serialize_connection(connection) }, status: :created
     else
       render json: { errors: connection.errors.full_messages }, status: :unprocessable_entity
@@ -55,5 +56,21 @@ class Api::V1::PartnerConnectionsController < ApplicationController
 
   def serialize_connections(pcs)
     pcs.map { |pc| serialize_connection(pc) }
+  end
+
+  def notify_partner_request(connection)
+    connection.target_org.organization_memberships
+      .where(role: :admin)
+      .includes(:user)
+      .each do |membership|
+        Notification.create!(
+          user: membership.user,
+          notification_type: :partner_request,
+          title: "New partner request",
+          body: "#{connection.requester_org.name} wants to connect as a partner.",
+          url: "/organizations/#{connection.target_org_id}/manage",
+          actor_name: connection.requester_org.name
+        )
+      end
   end
 end
