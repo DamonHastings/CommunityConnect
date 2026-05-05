@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConversations } from '../../hooks/useMessages'
-import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star } from 'lucide-react'
+import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, authOnly: true },
+  { to: '/feed', label: 'Activity', icon: Activity, authOnly: true },
   { to: '/organizations', label: 'Organizations', icon: Building2 },
   { to: '/programs', label: 'Programs', icon: BookOpen },
   { to: '/opportunities', label: 'Opportunities', icon: Briefcase },

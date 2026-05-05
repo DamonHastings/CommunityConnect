@@ -6,16 +6,18 @@ import { useMatches } from '../../hooks/useMatches'
 import { useMyApplications } from '../../hooks/useApplications'
 import { useMyReferrals } from '../../hooks/useReferrals'
 import { useConversations } from '../../hooks/useMessages'
+import { useFeed } from '../../hooks/useFeed'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
+import { FeedItem } from '../../components/feed/FeedItem'
 import { CATEGORY_LABELS, NEEDS_CATEGORY_LABELS } from '../../lib/utils'
 import {
   Building2, Briefcase, Plus, Users, Sparkles, ClipboardList, Bookmark,
   Clock, CheckCircle, MessageSquare, UserCheck, ArrowRight, Search,
-  Send, RefreshCw,
+  Send, RefreshCw, Activity,
 } from 'lucide-react'
 
 /* ── Seeker section ─────────────────────────────────────────────────────── */
@@ -475,6 +477,48 @@ function MyOrganizationsSection() {
   )
 }
 
+/* ── Feed section ───────────────────────────────────────────────────────── */
+
+function FeedSection() {
+  const { data, isLoading } = useFeed()
+  const items = (data?.feed ?? []).slice(0, 8)
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+          <Activity className="h-5 w-5 text-indigo-600" />
+          Recent Activity
+        </h2>
+        <Link to="/feed" className="text-sm font-medium text-indigo-600 hover:underline">
+          View all →
+        </Link>
+      </div>
+
+      {isLoading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-20 animate-pulse rounded-xl bg-gray-200" />)}
+        </div>
+      )}
+
+      {!isLoading && items.length === 0 && (
+        <Card>
+          <CardBody className="py-10 text-center text-gray-400">
+            <Activity className="mx-auto mb-2 h-8 w-8 opacity-40" />
+            <p className="text-sm">No recent activity yet.</p>
+          </CardBody>
+        </Card>
+      )}
+
+      {!isLoading && items.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {items.map(item => <FeedItem key={item.id} item={item} />)}
+        </div>
+      )}
+    </section>
+  )
+}
+
 /* ── Main dashboard ─────────────────────────────────────────────────────── */
 
 export function DashboardPage() {
@@ -497,6 +541,9 @@ export function DashboardPage() {
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-gray-600">Welcome back, {user.first_name}</p>
       </div>
+
+      {/* Activity feed — shown to all users */}
+      <FeedSection />
 
       {/* Individual seeker with completed intake */}
       {showSeeker && <SeekerSection />}
