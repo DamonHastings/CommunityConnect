@@ -1,12 +1,62 @@
+/* ─── Google Fonts ─────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+/* ─── Tailwind v4 ───────────────────────────────────────────────────── */
 @import "tailwindcss";
 
-* {
+/* ─── Design tokens ─────────────────────────────────────────────────── */
+@theme {
+  /* Backgrounds */
+  --color-bg:             #F4F5F7;
+  --color-surface:        #FFFFFF;
+  --color-border:         #E8EAED;
+
+  /* Brand */
+  --color-primary:        #4F7EF7;
+  --color-primary-hover:  #3A6AE8;
+  --color-primary-subtle: #EDF1FF;
+
+  /* Text */
+  --color-heading:        #1B1D2E;
+  --color-secondary:      #6B7280;
+  --color-muted:          #9CA3AF;
+
+  /* Semantic — success */
+  --color-success:        #22C55E;
+  --color-success-subtle: #F0FDF4;
+  --color-success-text:   #15803D;
+
+  /* Semantic — warning */
+  --color-warning:        #F59E0B;
+  --color-warning-subtle: #FFFBEB;
+  --color-warning-text:   #B45309;
+
+  /* Semantic — danger */
+  --color-danger:         #EF4444;
+  --color-danger-subtle:  #FEF2F2;
+  --color-danger-text:    #B91C1C;
+
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Radius */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-card: 16px;
+
+  /* Shadows */
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 10px 15px -3px rgba(0, 0, 0, 0.07);
+}
+
+/* ─── Global resets ─────────────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-heading);
 }
