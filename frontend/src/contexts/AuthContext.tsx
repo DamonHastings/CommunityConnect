@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import api from '../lib/api'
 import type { User, ProfileType, IntakeFormData } from '../types'
 
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('auth_token'))
   const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -106,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const submitIntake = async (data: IntakeFormData) => {
     await api.post('/intake', { intake_response: data })
     await fetchCurrentUser()
+    queryClient.invalidateQueries({ queryKey: ['matches'] })
   }
 
   const updateUser = (updater: (prev: User) => User) => {
