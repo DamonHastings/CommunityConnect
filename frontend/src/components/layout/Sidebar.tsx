@@ -12,7 +12,7 @@ const navItems = [
   { to: '/organizations', label: 'Organizations', icon: Building2 },
   { to: '/programs', label: 'Programs', icon: BookOpen },
   { to: '/opportunities', label: 'Opportunities', icon: Briefcase },
-  { to: '/professionals', label: 'Professionals', icon: Users },
+  { to: '/professionals', label: 'People', icon: Users },
   { to: '/organizations?type=foundation', label: 'Funders', icon: Landmark },
   { to: '/my-services', label: 'My Services', icon: Star, authOnly: true },
 ]

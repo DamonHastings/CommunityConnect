@@ -1,6 +1,13 @@
 class Api::V1::ProfessionalsController < ApplicationController
+  SEARCHABLE_TYPES = %w[individual_professional volunteer resource_navigator].freeze
+
   def index
-    professionals = User.where(profile_type: :individual_professional)
+    allowed_types = if params[:profile_type].present? && SEARCHABLE_TYPES.include?(params[:profile_type])
+      [params[:profile_type]]
+    else
+      SEARCHABLE_TYPES
+    end
+    professionals = User.where(profile_type: allowed_types)
     professionals = professionals.where(specialty: params[:specialty]) if params[:specialty].present?
     if params[:q].present?
       q = "%#{params[:q].downcase}%"
