@@ -145,7 +145,7 @@ export interface EngagementOpportunity {
   contact_email: string | null
   funding_amount: number | null
   eligibility: string | null
-  organization: { id: number; name: string }
+  organization: { id: number; name: string; city: string | null; state: string | null }
   created_at: string
   my_application?: { id: number; status: ApplicationStatus } | null
 }

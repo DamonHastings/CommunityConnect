@@ -6,7 +6,12 @@ class EngagementOpportunitySerializer
              :funding_amount, :eligibility, :created_at
 
   attribute :organization do |opp|
-    { id: opp.organization_id, name: opp.organization.name }
+    {
+      id: opp.organization_id,
+      name: opp.organization.name,
+      city: opp.organization.city,
+      state: opp.organization.state,
+    }
   end
 
   attribute :my_application do |opp, params|
