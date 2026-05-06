@@ -14,6 +14,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
+import { ProgramCard } from '../../components/programs/ProgramCard'
 import { FeedItem } from '../../components/feed/FeedItem'
 import { CATEGORY_LABELS, NEEDS_CATEGORY_LABELS } from '../../lib/utils'
 import {
@@ -211,7 +212,7 @@ function SeekerSection() {
 
         {matchesLoading ? (
           <p className="text-xs text-muted">Finding matches…</p>
-        ) : matches?.organizations.length === 0 && matches?.opportunities.length === 0 ? (
+        ) : matches?.organizations.length === 0 && matches?.opportunities.length === 0 && (matches?.programs?.length ?? 0) === 0 ? (
           <Card>
             <CardBody className="py-6 text-center">
               <Sparkles className="mx-auto mb-2 h-7 w-7 text-muted opacity-50" />
@@ -225,6 +226,9 @@ function SeekerSection() {
           <div className="space-y-3">
             {matches?.organizations.slice(0, 3).map((org) => (
               <OrganizationCard key={org.id} organization={org} />
+            ))}
+            {(matches?.programs ?? []).slice(0, 2).map((prog) => (
+              <ProgramCard key={prog.id} program={prog} />
             ))}
             {matches?.opportunities.slice(0, 2).map((opp) => (
               <OpportunityCard key={opp.id} opportunity={opp} />

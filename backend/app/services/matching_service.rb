@@ -17,6 +17,18 @@ class MatchingService
     "financial_assistance" => "financial assistance emergency fund benefit"
   }.freeze
 
+  NEEDS_TO_PROGRAM_TYPES = {
+    "job_training"          => ["job_training", "mentorship", "workshop"],
+    "education"             => ["tutoring", "workshop", "summer_program", "mentorship"],
+    "mental_health"         => ["mentorship", "workshop", "other"],
+    "food_nutrition"        => ["community_event", "other"],
+    "housing_shelter"       => ["workshop", "other"],
+    "healthcare"            => ["workshop", "other"],
+    "childcare"             => ["summer_program", "community_event"],
+    "substance_use_support" => ["mentorship", "workshop"],
+    "other"                 => ["other"]
+  }.freeze
+
   def initialize(intake)
     @intake = intake
     @needs  = intake.needs_categories
@@ -45,6 +57,21 @@ class MatchingService
       .sort_by { |_, score, open_count| [-score, -open_count] }
       .first(limit)
       .map(&:first)
+  end
+
+  def matched_programs(limit: 5)
+    return [] if @needs.empty?
+
+    target_types = @needs.flat_map { |n| NEEDS_TO_PROGRAM_TYPES[n] || [] }.uniq
+
+    return [] if target_types.empty?
+
+    Program
+      .where(status: [:published, :active])
+      .where(program_type: target_types)
+      .includes(:organization)
+      .order(created_at: :desc)
+      .limit(limit)
   end
 
   def matched_opportunities(org_ids, limit: 5)

@@ -8,15 +8,17 @@ class Api::V1::MatchesController < ApplicationController
       return render json: { has_intake: false, needs_categories: [], organizations: [], opportunities: [] }
     end
 
-    service = ::MatchingService.new(intake)
-    orgs    = service.matched_organizations
-    opps    = service.matched_opportunities(orgs.map(&:id))
+    service   = ::MatchingService.new(intake)
+    orgs      = service.matched_organizations
+    opps      = service.matched_opportunities(orgs.map(&:id))
+    programs  = service.matched_programs
 
     render json: {
       has_intake:       true,
       needs_categories: intake.needs_categories,
       organizations:    orgs.map { |o| serialize_org(o) },
-      opportunities:    opps.map { |op| serialize_opp(op) }
+      opportunities:    opps.map { |op| serialize_opp(op) },
+      programs:         programs.map { |p| serialize_program(p) }
     }
   end
 
@@ -28,5 +30,9 @@ class Api::V1::MatchesController < ApplicationController
 
   def serialize_opp(opp)
     EngagementOpportunitySerializer.new(opp).serializable_hash[:data][:attributes]
+  end
+
+  def serialize_program(program)
+    ProgramSerializer.new(program).serializable_hash[:data][:attributes]
   end
 end
