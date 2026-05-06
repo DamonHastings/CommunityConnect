@@ -8,6 +8,7 @@ import { useProgramApplications, useUpdateProgramApplication } from '../../hooks
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useOrgConnections, useUpdateConnectionRequest } from '../../hooks/usePartnerConnections'
 import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
+import { useStartConversation } from '../../hooks/useMessages'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -15,7 +16,7 @@ import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { formatDate } from '../../lib/utils'
-import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare } from 'lucide-react'
 import type { EngagementOpportunity, Program } from '../../types'
 
 /* ── Applications panel ─────────────────────────────────────────────────── */
@@ -27,7 +28,7 @@ function ApplicationStatusBadge({ status }: { status: string }) {
   return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
 }
 
-function OppApplicationsList({ opp }: { opp: EngagementOpportunity }) {
+function OppApplicationsList({ opp, onMessage }: { opp: EngagementOpportunity; onMessage: (userId: number) => void }) {
   const { data, isLoading } = useOpportunityApplications(opp.id)
   const update = useUpdateApplication()
   const apps = data?.applications ?? []
@@ -50,20 +51,25 @@ function OppApplicationsList({ opp }: { opp: EngagementOpportunity }) {
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
               <ApplicationStatusBadge status={app.status} />
-              {app.status === 'pending' && (
-                <div className="flex gap-1">
-                  <Button size="sm" variant="outline" disabled={update.isPending}
-                    onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
-                    <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                    Approve
-                  </Button>
-                  <Button size="sm" variant="outline" disabled={update.isPending}
-                    onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
-                    <XCircle className="mr-1 h-3.5 w-3.5" />
-                    Reject
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" onClick={() => onMessage(app.applicant.id)}>
+                  <MessageSquare className="h-3.5 w-3.5" />
+                </Button>
+                {app.status === 'pending' && (
+                  <>
+                    <Button size="sm" variant="outline" disabled={update.isPending}
+                      onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
+                      <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={update.isPending}
+                      onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
+                      <XCircle className="mr-1 h-3.5 w-3.5" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -72,7 +78,7 @@ function OppApplicationsList({ opp }: { opp: EngagementOpportunity }) {
   )
 }
 
-function ProgApplicationsList({ program }: { program: Program }) {
+function ProgApplicationsList({ program, onMessage }: { program: Program; onMessage: (userId: number) => void }) {
   const { data, isLoading } = useProgramApplications(program.id)
   const update = useUpdateProgramApplication()
   const apps = data?.applications ?? []
@@ -92,20 +98,25 @@ function ProgApplicationsList({ program }: { program: Program }) {
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
               <ApplicationStatusBadge status={app.status} />
-              {app.status === 'pending' && (
-                <div className="flex gap-1">
-                  <Button size="sm" variant="outline" disabled={update.isPending}
-                    onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
-                    <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                    Approve
-                  </Button>
-                  <Button size="sm" variant="outline" disabled={update.isPending}
-                    onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
-                    <XCircle className="mr-1 h-3.5 w-3.5" />
-                    Reject
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" onClick={() => onMessage(app.applicant.id)}>
+                  <MessageSquare className="h-3.5 w-3.5" />
+                </Button>
+                {app.status === 'pending' && (
+                  <>
+                    <Button size="sm" variant="outline" disabled={update.isPending}
+                      onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
+                      <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={update.isPending}
+                      onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
+                      <XCircle className="mr-1 h-3.5 w-3.5" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -121,6 +132,14 @@ function ApplicationsTab({ orgId }: { orgId: number }) {
   const programs = progsData?.programs ?? []
   const [expandedOppId, setExpandedOppId] = useState<number | null>(null)
   const [expandedProgId, setExpandedProgId] = useState<number | null>(null)
+  const startConversation = useStartConversation()
+  const navigate = useNavigate()
+
+  const handleMessage = (userId: number) => {
+    startConversation.mutate(userId, {
+      onSuccess: (conv) => navigate(`/messages/${conv.id}`),
+    })
+  }
 
   const hasOpps = opps.length > 0
   const hasProgs = programs.length > 0
@@ -157,7 +176,7 @@ function ApplicationsTab({ orgId }: { orgId: number }) {
                       {expandedOppId === opp.id ? 'Collapse' : 'View applications'}
                     </Button>
                   </div>
-                  {expandedOppId === opp.id && <OppApplicationsList opp={opp} />}
+                  {expandedOppId === opp.id && <OppApplicationsList opp={opp} onMessage={handleMessage} />}
                 </CardBody>
               </Card>
             ))}
@@ -182,7 +201,7 @@ function ApplicationsTab({ orgId }: { orgId: number }) {
                       {expandedProgId === prog.id ? 'Collapse' : 'View applications'}
                     </Button>
                   </div>
-                  {expandedProgId === prog.id && <ProgApplicationsList program={prog} />}
+                  {expandedProgId === prog.id && <ProgApplicationsList program={prog} onMessage={handleMessage} />}
                 </CardBody>
               </Card>
             ))}
