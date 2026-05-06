@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_025414) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_025639) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -289,6 +289,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_025414) do
     t.index ["specialty"], name: "index_users_on_specialty"
   end
 
+  create_table "volunteer_hours", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.decimal "hours", precision: 5, scale: 2, null: false
+    t.text "notes"
+    t.bigint "service_application_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["service_application_id"], name: "index_volunteer_hours_on_service_application_id"
+  end
+
   add_foreign_key "announcements", "organizations"
   add_foreign_key "caseloads", "users", column: "client_id"
   add_foreign_key "caseloads", "users", column: "navigator_id"
@@ -317,4 +327,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_025414) do
   add_foreign_key "service_applications", "organizations", column: "applicant_org_id"
   add_foreign_key "service_applications", "users"
   add_foreign_key "user_intake_responses", "users"
+  add_foreign_key "volunteer_hours", "service_applications"
 end

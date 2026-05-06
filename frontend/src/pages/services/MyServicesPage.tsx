@@ -4,13 +4,14 @@ import { useMyApplications, useWithdrawApplication } from '../../hooks/useApplic
 import { useMyProgramApplications, useWithdrawProgramApplication } from '../../hooks/useProgramApplications'
 import { useSavedOrganizations, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useMyReferrals, useUpdateReferral } from '../../hooks/useReferrals'
+import { useVolunteerHours, useLogHours, useDeleteHours } from '../../hooks/useVolunteerHours'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
-import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck } from 'lucide-react'
+import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck, Timer, Trash2, Plus } from 'lucide-react'
 import type { ApplicationStatus, ServiceApplication, ProgramApplication } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
@@ -26,6 +27,118 @@ function StatCard({ value, label, icon }: { value: number; label: string; icon: 
       <div className="mb-1 text-indigo-600">{icon}</div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
       <div className="text-xs text-gray-500">{label}</div>
+    </div>
+  )
+}
+
+function VolunteerHoursPanel({ applicationId }: { applicationId: number }) {
+  const [open, setOpen] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [hours, setHours] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [notes, setNotes] = useState('')
+  const { data, isLoading } = useVolunteerHours(applicationId, open)
+  const logHours = useLogHours(applicationId)
+  const deleteHours = useDeleteHours(applicationId)
+
+  const totalHours = data?.total_hours ?? 0
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!hours || !date) return
+    logHours.mutate(
+      { hours: parseFloat(hours), date, notes: notes || undefined },
+      {
+        onSuccess: () => {
+          setHours('')
+          setNotes('')
+          setDate(new Date().toISOString().split('T')[0])
+          setShowForm(false)
+        },
+      }
+    )
+  }
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+      >
+        <Timer className="h-3.5 w-3.5" />
+        {totalHours > 0 ? `${totalHours}h logged` : 'Log hours'}
+        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          {isLoading ? (
+            <p className="text-xs text-gray-400">Loading…</p>
+          ) : (
+            <>
+              {data?.hours.map((h) => (
+                <div key={h.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-900">{h.hours}h</span>
+                    <span className="mx-2 text-gray-400">·</span>
+                    <span className="text-gray-500">{formatDate(h.date)}</span>
+                    {h.notes && <p className="mt-0.5 text-xs text-gray-400">{h.notes}</p>}
+                  </div>
+                  <button
+                    onClick={() => deleteHours.mutate(h.id)}
+                    disabled={deleteHours.isPending}
+                    className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {showForm ? (
+                <form onSubmit={handleSubmit} className="space-y-2 rounded-lg border border-gray-200 bg-white p-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min="0.25"
+                      step="0.25"
+                      placeholder="Hours"
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value)}
+                      className="w-24 rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none"
+                      required
+                    />
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Notes (optional)"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" type="submit" disabled={logHours.isPending}>Save</Button>
+                    <Button size="sm" variant="outline" type="button" onClick={() => setShowForm(false)}>Cancel</Button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-indigo-600"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add entry
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -131,33 +244,36 @@ export function MyServicesPage() {
                   const config = STATUS_CONFIG[app.status]
                   return (
                     <Card key={app.id}>
-                      <CardBody className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <Link
-                            to={`/opportunities/${app.opportunity.id}`}
-                            className="font-semibold text-gray-900 hover:text-indigo-600"
-                          >
-                            {app.opportunity.title}
-                          </Link>
-                          <p className="text-sm text-gray-500">
-                            <Link to={`/organizations/${app.opportunity.organization.id}`} className="hover:text-indigo-600">
-                              {app.opportunity.organization.name}
-                            </Link>
-                          </p>
-                          <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-2">
-                          <Badge variant={config.variant}>{config.label}</Badge>
-                          {app.status === 'pending' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setPendingWithdraw(app)}
+                      <CardBody>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <Link
+                              to={`/opportunities/${app.opportunity.id}`}
+                              className="font-semibold text-gray-900 hover:text-indigo-600"
                             >
-                              Withdraw
-                            </Button>
-                          )}
+                              {app.opportunity.title}
+                            </Link>
+                            <p className="text-sm text-gray-500">
+                              <Link to={`/organizations/${app.opportunity.organization.id}`} className="hover:text-indigo-600">
+                                {app.opportunity.organization.name}
+                              </Link>
+                            </p>
+                            <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                          </div>
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <Badge variant={config.variant}>{config.label}</Badge>
+                            {app.status === 'pending' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setPendingWithdraw(app)}
+                              >
+                                Withdraw
+                              </Button>
+                            )}
+                          </div>
                         </div>
+                        {app.status === 'approved' && <VolunteerHoursPanel applicationId={app.id} />}
                       </CardBody>
                     </Card>
                   )

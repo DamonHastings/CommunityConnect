@@ -55,6 +55,9 @@ Rails.application.routes.draw do
       end
       resources :applications, controller: "service_applications", only: [:update, :destroy]
       get "my/applications", to: "my_applications#index"
+      resources :my_applications, only: [] do
+        resources :volunteer_hours, only: [:index, :create, :destroy]
+      end
       resources :saved_organizations, only: [:index, :create, :destroy]
       resources :org_followers, only: [:create, :destroy], param: :organization_id
       resources :caseloads, only: [:index, :create, :update, :destroy]
