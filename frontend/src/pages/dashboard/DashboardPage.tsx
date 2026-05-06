@@ -156,30 +156,33 @@ function SeekerSection() {
   return (
     <>
       <Card>
-        <CardBody className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <CardBody className="space-y-3">
+          <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
               <ClipboardList className="h-4 w-4 text-primary" />
               My Services
             </h2>
-            <div className="flex items-center gap-3 text-xs text-secondary">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 text-warning" />
-                {pendingCount} pending
-              </span>
-              <span className="flex items-center gap-1">
-                <CheckCircle className="h-3.5 w-3.5 text-success" />
-                {connectedCount} connected
-              </span>
-              <span className="flex items-center gap-1">
-                <Bookmark className="h-3.5 w-3.5 text-primary" />
-                {savedCount} saved
-              </span>
+            <Link to="/my-services" className="text-xs font-medium text-primary hover:underline">
+              View all →
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center gap-0.5 rounded-lg bg-bg py-2.5">
+              <Clock className="mb-0.5 h-3.5 w-3.5 text-warning" />
+              <span className="text-base font-bold text-heading">{pendingCount}</span>
+              <span className="text-[10px] text-muted">pending</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5 rounded-lg bg-bg py-2.5">
+              <CheckCircle className="mb-0.5 h-3.5 w-3.5 text-success" />
+              <span className="text-base font-bold text-heading">{connectedCount}</span>
+              <span className="text-[10px] text-muted">connected</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5 rounded-lg bg-bg py-2.5">
+              <Bookmark className="mb-0.5 h-3.5 w-3.5 text-primary" />
+              <span className="text-base font-bold text-heading">{savedCount}</span>
+              <span className="text-[10px] text-muted">saved</span>
             </div>
           </div>
-          <Link to="/my-services" className="shrink-0 text-xs font-medium text-primary hover:underline">
-            View all →
-          </Link>
         </CardBody>
       </Card>
 
@@ -189,21 +192,21 @@ function SeekerSection() {
             <Sparkles className="h-4 w-4 text-primary" />
             Matched for you
           </h2>
-          <div className="flex items-center gap-3">
-            <Link to="/intake" className="flex items-center gap-1 text-xs text-muted hover:text-heading">
-              <RefreshCw className="h-3 w-3" />
-              Update needs
-            </Link>
-            <Link to="/organizations" className="text-xs font-medium text-primary hover:underline">
-              Browse all →
-            </Link>
-          </div>
+          <Link to="/organizations" className="text-xs font-medium text-primary hover:underline">
+            Browse all →
+          </Link>
         </div>
 
         {needsLabels.length > 0 && (
-          <p className="mb-3 text-xs text-muted">
-            Based on: <span className="font-medium text-secondary">{needsLabels.join(', ')}</span>
-          </p>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs text-muted">
+              Based on: <span className="font-medium text-secondary">{needsLabels.join(', ')}</span>
+            </p>
+            <Link to="/intake" className="flex shrink-0 items-center gap-1 text-xs text-muted hover:text-heading">
+              <RefreshCw className="h-3 w-3" />
+              Update
+            </Link>
+          </div>
         )}
 
         {matchesLoading ? (
@@ -447,19 +450,38 @@ function NavigatorSection() {
       </div>
 
       <Card>
-        <CardBody>
-          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-heading">
-            <Search className="h-4 w-4 text-primary" />
-            Find resources
-          </h2>
-          <div className="flex gap-2">
-            <Link to="/organizations" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full justify-center">Organizations</Button>
-            </Link>
-            <Link to="/programs" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full justify-center">Programs</Button>
+        <CardBody className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+              <Search className="h-4 w-4 text-primary" />
+              Find resources
+            </h2>
+            <Link to="/programs" className="text-xs font-medium text-primary hover:underline">
+              All programs →
             </Link>
           </div>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { label: 'Housing',       category: 'housing'       },
+              { label: 'Food',          category: 'food_bank'     },
+              { label: 'Mental Health', category: 'mental_health' },
+              { label: 'Healthcare',    category: 'healthcare'    },
+              { label: 'Youth',         category: 'youth_services'},
+              { label: 'Shelter',       category: 'shelter'       },
+              { label: 'Education',     category: 'education'     },
+            ].map(({ label, category }) => (
+              <Link
+                key={category}
+                to={`/organizations?category=${category}`}
+                className="rounded-full border border-border bg-bg px-2.5 py-1 text-xs text-secondary transition hover:border-primary hover:text-primary"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+          <Link to="/organizations" className="text-xs text-muted hover:text-heading">
+            Browse all organizations →
+          </Link>
         </CardBody>
       </Card>
     </>
@@ -632,7 +654,7 @@ function RightSidebar() {
   const showSeeker = isSeeker && user.intake_completed === true
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {showSeeker && <SeekerSection />}
       {isProfessional && <ProfessionalSection />}
       {isVolunteer && (
