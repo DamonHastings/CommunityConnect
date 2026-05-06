@@ -269,8 +269,8 @@ export interface PartnerConnection {
   id: number
   status: 'pending' | 'accepted' | 'declined'
   message: string | null
-  requester_org: { id: number; name: string }
-  target_org: { id: number; name: string }
+  requester_org: { id: number; name: string; primary_admin_id: number | null }
+  target_org: { id: number; name: string; primary_admin_id: number | null }
   created_at: string
 }
 

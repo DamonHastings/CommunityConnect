@@ -280,6 +280,14 @@ function PartnersTab({ orgId }: { orgId: number }) {
   const connections = data?.partner_connections ?? []
   const accepted = connections.filter((c) => c.status === 'accepted')
   const pending = connections.filter((c) => c.status === 'pending' && c.target_org.id === orgId)
+  const startConversation = useStartConversation()
+  const navigate = useNavigate()
+
+  const handleMessage = (userId: number) => {
+    startConversation.mutate(userId, {
+      onSuccess: (conv) => navigate(`/messages/${conv.id}`),
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -326,6 +334,7 @@ function PartnersTab({ orgId }: { orgId: number }) {
           <div className="space-y-2">
             {accepted.map((c) => {
               const partner = c.requester_org.id === orgId ? c.target_org : c.requester_org
+              const partnerAdminId = partner.primary_admin_id
               return (
                 <Card key={c.id}>
                   <CardBody className="flex items-center justify-between">
@@ -335,7 +344,15 @@ function PartnersTab({ orgId }: { orgId: number }) {
                         {partner.name}
                       </div>
                     </Link>
-                    <Badge variant="success">Partner</Badge>
+                    <div className="flex items-center gap-2">
+                      {partnerAdminId && (
+                        <Button size="sm" variant="outline" onClick={() => handleMessage(partnerAdminId)}>
+                          <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                          Message
+                        </Button>
+                      )}
+                      <Badge variant="success">Partner</Badge>
+                    </div>
                   </CardBody>
                 </Card>
               )
