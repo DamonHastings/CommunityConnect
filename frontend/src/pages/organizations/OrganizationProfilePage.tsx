@@ -5,6 +5,7 @@ import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
 import { useOrganizationPrograms } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useSaveOrganization, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
+import { useFollowOrganization, useUnfollowOrganization } from '../../hooks/useOrgFollowers'
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
 import { useOrgConnections, useSendConnectionRequest, useUpdateConnectionRequest, useCancelConnectionRequest } from '../../hooks/usePartnerConnections'
 import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
@@ -18,7 +19,7 @@ import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { ReferClientForm } from '../../components/referrals/ReferClientForm'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare, Bell, BellOff } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -353,6 +354,8 @@ export function OrganizationProfilePage() {
   const { data: programsData } = useOrganizationPrograms(id!)
   const save = useSaveOrganization()
   const unsave = useUnsaveOrganization()
+  const follow = useFollowOrganization()
+  const unfollow = useUnfollowOrganization()
   const updateOrg = useUpdateOrganization(id!)
   const startConversation = useStartConversation()
 
@@ -390,6 +393,7 @@ export function OrganizationProfilePage() {
   const isPlatformAdmin = user?.platform_admin ?? false
   const openOpps = oppsData?.opportunities.filter((o) => o.status === 'open') ?? []
   const isSaved = user?.saved_org_ids?.includes(org.id) ?? false
+  const isFollowing = user?.followed_org_ids?.includes(org.id) ?? false
 
   const existingConnection = connectionsData?.partner_connections.find(
     (c) => c.requester_org.id === org.id || c.target_org.id === org.id
@@ -440,6 +444,17 @@ export function OrganizationProfilePage() {
                 strokeWidth={isSaved ? 0 : 1.5}
               />
               {isSaved ? 'Saved' : 'Save'}
+            </Button>
+          )}
+          {user && !isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => isFollowing ? unfollow.mutate(org.id) : follow.mutate(org.id)}
+            >
+              {isFollowing
+                ? <><BellOff className="mr-1.5 h-4 w-4" />Following</>
+                : <><Bell className="mr-1.5 h-4 w-4" />Follow</>}
             </Button>
           )}
           {user && !isAdmin && org.primary_admin && user.id !== org.primary_admin.id && (
@@ -610,6 +625,10 @@ export function OrganizationProfilePage() {
               <div className="flex items-center gap-2 text-gray-600">
                 <Users className="h-4 w-4 shrink-0 text-gray-400" />
                 <span>{org.member_count} member{org.member_count !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Bell className="h-4 w-4 shrink-0 text-gray-400" />
+                <span>{org.follower_count ?? 0} follower{(org.follower_count ?? 0) !== 1 ? 's' : ''}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="h-4 w-4 shrink-0 text-gray-400" />

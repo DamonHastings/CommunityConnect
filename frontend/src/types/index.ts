@@ -34,6 +34,7 @@ export interface User {
   created_at: string
   intake_completed?: boolean | null
   saved_org_ids?: number[]
+  followed_org_ids?: number[]
 }
 
 export type HousingStatus =
@@ -101,6 +102,7 @@ export interface Organization {
   verified: boolean
   member_count: number
   open_opportunity_count: number
+  follower_count: number
   primary_admin: { id: number; name: string } | null
   created_at: string
 }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_024436) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -84,6 +84,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_100000) do
     t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable_type_and_notifiable_id"
     t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
     t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "org_followers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["organization_id"], name: "index_org_followers_on_organization_id"
+    t.index ["user_id", "organization_id"], name: "index_org_followers_on_user_id_and_organization_id", unique: true
+    t.index ["user_id"], name: "index_org_followers_on_user_id"
   end
 
   create_table "organization_memberships", force: :cascade do |t|
@@ -274,6 +284,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_100000) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "notifications", "users"
+  add_foreign_key "org_followers", "organizations"
+  add_foreign_key "org_followers", "users"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "partner_connections", "organizations", column: "requester_org_id"

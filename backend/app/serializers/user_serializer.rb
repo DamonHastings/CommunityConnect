@@ -27,4 +27,8 @@ class UserSerializer
   attribute :saved_org_ids do |user|
     user.saved_organizations.pluck(:organization_id)
   end
+
+  attribute :followed_org_ids do |user|
+    user.org_followers.pluck(:organization_id)
+  end
 end

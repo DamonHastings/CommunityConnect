@@ -17,4 +17,9 @@ class OrganizationSerializer
     admin = org.organization_memberships.admin.includes(:user).first
     admin ? { id: admin.user_id, name: admin.user.full_name } : nil
   end
+
+  attribute :follower_count do |org|
+    org.org_followers.count
+  end
+
 end

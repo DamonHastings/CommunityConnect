@@ -13,6 +13,8 @@ class Organization < ApplicationRecord
   has_many :announcements, dependent: :destroy
   has_many :sent_partner_connections, class_name: "PartnerConnection", foreign_key: :requester_org_id, dependent: :destroy
   has_many :received_partner_connections, class_name: "PartnerConnection", foreign_key: :target_org_id, dependent: :destroy
+  has_many :org_followers, dependent: :destroy
+  has_many :followers, through: :org_followers, source: :user
 
   enum :category, {
     food_bank: 0,

@@ -16,6 +16,8 @@ class User < ApplicationRecord
   has_many :conversation_participants, dependent: :destroy
   has_many :conversations, through: :conversation_participants
   has_many :notifications, dependent: :destroy
+  has_many :org_followers, dependent: :destroy
+  has_many :followed_orgs, through: :org_followers, source: :organization
 
   enum :profile_type, {
     individual_seeker: 0,
