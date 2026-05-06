@@ -45,7 +45,7 @@ class Api::V1::ServiceApplicationsController < ApplicationController
   def set_opportunity = @opportunity = EngagementOpportunity.find(params[:opportunity_id])
   def set_application = @application = ServiceApplication.find(params[:id])
   def application_params = params.require(:application).permit(:message, :applicant_org_id)
-  def update_params = params.require(:application).permit(:status, :notes)
+  def update_params = params.require(:application).permit(:status, :notes, :award_amount, :disbursed)
   def serialize(app) = ServiceApplicationSerializer.new(app).serializable_hash[:data][:attributes]
 
   def notify_application_status_change(application, previous_status)

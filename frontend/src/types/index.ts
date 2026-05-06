@@ -123,11 +123,14 @@ export interface ServiceApplication {
   status: ApplicationStatus
   message: string | null
   notes: string | null
+  award_amount: string | null
+  disbursed: boolean
   applicant: { id: number; name: string; email: string }
   applicant_org: { id: number; name: string } | null
   opportunity: {
     id: number
     title: string
+    opportunity_type: OpportunityType
     organization: { id: number; name: string }
   }
   created_at: string

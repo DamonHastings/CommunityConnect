@@ -16,8 +16,8 @@ import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { formatDate } from '../../lib/utils'
-import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare, BarChart2, ChevronDown, ChevronRight } from 'lucide-react'
-import type { EngagementOpportunity, Program } from '../../types'
+import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare, BarChart2, ChevronDown, ChevronRight, DollarSign } from 'lucide-react'
+import type { EngagementOpportunity, Program, ServiceApplication } from '../../types'
 
 /* ── Applications panel ─────────────────────────────────────────────────── */
 
@@ -28,12 +28,131 @@ function ApplicationStatusBadge({ status }: { status: string }) {
   return <Badge variant={variants[status] ?? 'default'}>{status}</Badge>
 }
 
+function GrantApplicationCard({
+  app,
+  onMessage,
+  update,
+}: {
+  app: ServiceApplication
+  onMessage: (userId: number) => void
+  update: ReturnType<typeof useUpdateApplication>
+}) {
+  const [awardDraft, setAwardDraft] = useState(app.award_amount ?? '')
+
+  function handleAwardBlur() {
+    const parsed = parseFloat(String(awardDraft))
+    if (!isNaN(parsed) && parsed >= 0) {
+      update.mutate({ id: app.id, award_amount: parsed })
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900">{app.applicant_org?.name ?? app.applicant.name}</p>
+          <p className="text-xs text-gray-500">Applied by: {app.applicant.name} · {app.applicant.email}</p>
+          {app.message && <p className="mt-1 text-gray-600 line-clamp-2">{app.message}</p>}
+          <p className="mt-0.5 text-xs text-gray-400">Submitted {formatDate(app.created_at)}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <ApplicationStatusBadge status={app.status} />
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" onClick={() => onMessage(app.applicant.id)}>
+              <MessageSquare className="h-3.5 w-3.5" />
+            </Button>
+            {app.status === 'pending' && (
+              <>
+                <Button size="sm" variant="outline" disabled={update.isPending}
+                  onClick={() => update.mutate({ id: app.id, status: 'approved' })}>
+                  <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                  Approve
+                </Button>
+                <Button size="sm" variant="outline" disabled={update.isPending}
+                  onClick={() => update.mutate({ id: app.id, status: 'rejected' })}>
+                  <XCircle className="mr-1 h-3.5 w-3.5" />
+                  Reject
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {app.status === 'approved' && (
+        <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-amber-200 pt-3">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+            <label className="text-xs font-medium text-gray-700 whitespace-nowrap">Award amount</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Enter amount"
+              value={awardDraft}
+              onChange={(e) => setAwardDraft(e.target.value)}
+              onBlur={handleAwardBlur}
+              className="w-32 rounded border border-gray-300 px-2 py-0.5 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={app.disbursed}
+              onChange={() => update.mutate({ id: app.id, disbursed: !app.disbursed })}
+              className="rounded border-gray-300"
+            />
+            Funds disbursed
+          </label>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function GrantApplicationsList({
+  opp,
+  apps,
+  onMessage,
+  update,
+}: {
+  opp: EngagementOpportunity
+  apps: ServiceApplication[]
+  onMessage: (userId: number) => void
+  update: ReturnType<typeof useUpdateApplication>
+}) {
+  const totalAwarded = apps.reduce((sum, a) => sum + (a.award_amount ? Number(a.award_amount) : 0), 0)
+
+  return (
+    <div className="space-y-2 mt-2">
+      <div className="flex gap-6 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm">
+        <span className="text-gray-600">
+          Requested: <strong className="text-gray-900">
+            {opp.funding_amount ? `$${Number(opp.funding_amount).toLocaleString()}` : '—'}
+          </strong>
+          <span className="text-gray-400"> × {apps.length} applicant{apps.length !== 1 ? 's' : ''}</span>
+        </span>
+        <span className="text-gray-600">
+          Awarded: <strong className="text-gray-900">${totalAwarded.toLocaleString()}</strong>
+        </span>
+      </div>
+      {apps.map((app) => (
+        <GrantApplicationCard key={app.id} app={app} onMessage={onMessage} update={update} />
+      ))}
+    </div>
+  )
+}
+
 function OppApplicationsList({ opp, onMessage }: { opp: EngagementOpportunity; onMessage: (userId: number) => void }) {
   const { data, isLoading } = useOpportunityApplications(opp.id)
   const update = useUpdateApplication()
   const apps = data?.applications ?? []
   if (isLoading) return <p className="text-sm text-gray-400 py-2">Loading applications…</p>
   if (apps.length === 0) return <p className="text-sm text-gray-400 py-2">No applications for this opportunity.</p>
+
+  if (opp.opportunity_type === 'funding') {
+    return <GrantApplicationsList opp={opp} apps={apps} onMessage={onMessage} update={update} />
+  }
 
   return (
     <div className="space-y-2 mt-2">

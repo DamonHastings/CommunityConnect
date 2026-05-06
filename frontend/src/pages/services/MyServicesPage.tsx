@@ -11,7 +11,7 @@ import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
-import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck, Timer, Trash2, Plus } from 'lucide-react'
+import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck, Timer, Trash2, Plus, DollarSign } from 'lucide-react'
 import type { ApplicationStatus, ServiceApplication, ProgramApplication } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
@@ -273,7 +273,16 @@ export function MyServicesPage() {
                             )}
                           </div>
                         </div>
-                        {app.status === 'approved' && <VolunteerHoursPanel applicationId={app.id} />}
+                        {app.status === 'approved' && app.opportunity.opportunity_type === 'funding' && app.award_amount && (
+                          <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3 text-sm text-amber-800">
+                            <DollarSign className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                            <span>Award: <strong>${Number(app.award_amount).toLocaleString()}</strong></span>
+                            {app.disbursed && <span className="ml-1 text-xs font-medium text-green-700">· Disbursed</span>}
+                          </div>
+                        )}
+                        {app.status === 'approved' && app.opportunity.opportunity_type !== 'funding' && (
+                          <VolunteerHoursPanel applicationId={app.id} />
+                        )}
                       </CardBody>
                     </Card>
                   )

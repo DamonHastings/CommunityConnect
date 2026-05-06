@@ -39,9 +39,9 @@ export function useApply(opportunityId: number) {
 export function useUpdateApplication() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status, notes }: { id: number; status?: string; notes?: string }) =>
+    mutationFn: ({ id, status, notes, award_amount, disbursed }: { id: number; status?: string; notes?: string; award_amount?: number | null; disbursed?: boolean }) =>
       api.patch<{ application: ServiceApplication }>(`/applications/${id}`, {
-        application: { status, notes },
+        application: { status, notes, award_amount, disbursed },
       }).then((r) => r.data.application),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['my-applications'] })
