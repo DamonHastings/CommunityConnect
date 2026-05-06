@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_024436) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_025414) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_024436) do
     t.datetime "updated_at", null: false
     t.index ["organization_id", "published_at"], name: "index_announcements_on_organization_id_and_published_at"
     t.index ["organization_id"], name: "index_announcements_on_organization_id"
+  end
+
+  create_table "caseloads", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "navigator_id", null: false
+    t.text "notes"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_caseloads_on_client_id"
+    t.index ["navigator_id", "client_id"], name: "index_caseloads_on_navigator_id_and_client_id", unique: true
+    t.index ["navigator_id"], name: "index_caseloads_on_navigator_id"
   end
 
   create_table "conversation_participants", force: :cascade do |t|
@@ -278,6 +290,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_024436) do
   end
 
   add_foreign_key "announcements", "organizations"
+  add_foreign_key "caseloads", "users", column: "client_id"
+  add_foreign_key "caseloads", "users", column: "navigator_id"
   add_foreign_key "conversation_participants", "conversations"
   add_foreign_key "conversation_participants", "users"
   add_foreign_key "engagement_opportunities", "organizations"

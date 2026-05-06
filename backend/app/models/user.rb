@@ -18,6 +18,8 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :org_followers, dependent: :destroy
   has_many :followed_orgs, through: :org_followers, source: :organization
+  has_many :caseloads, foreign_key: :navigator_id, dependent: :destroy
+  has_many :caseload_clients, through: :caseloads, source: :client
 
   enum :profile_type, {
     individual_seeker: 0,

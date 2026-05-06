@@ -25,6 +25,7 @@ import { MessagesPage } from './pages/messages/MessagesPage'
 import { ConversationPage } from './pages/messages/ConversationPage'
 import { FeedPage } from './pages/feed/FeedPage'
 import { VolunteerOpportunitiesPage } from './pages/opportunities/VolunteerOpportunitiesPage'
+import { CaseloadPage } from './pages/caseloads/CaseloadPage'
 import type { ReactNode } from 'react'
 
 const queryClient = new QueryClient({
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="/programs/:id/edit" element={<RequireAuth><ProgramFormPage /></RequireAuth>} />
         <Route path="/my-applications" element={<Navigate to="/my-services" replace />} />
         <Route path="/my-services" element={<RequireAuth><MyServicesPage /></RequireAuth>} />
+        <Route path="/caseload" element={<RequireAuth><CaseloadPage /></RequireAuth>} />
         <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
         <Route path="/messages/:id" element={<RequireAuth><ConversationPage /></RequireAuth>} />
         <Route path="/feed" element={<RequireAuth><FeedPage /></RequireAuth>} />

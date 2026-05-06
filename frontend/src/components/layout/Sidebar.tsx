@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConversations } from '../../hooks/useMessages'
-import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity, HandHeart, ChevronDown } from 'lucide-react'
+import { MessageSquare, LayoutDashboard, Building2, BookOpen, Briefcase, Users, Landmark, Star, Activity, HandHeart, ChevronDown, ClipboardList } from 'lucide-react'
 
 const ACTIVE_ORG_KEY = 'active_org_id'
 
@@ -81,6 +81,12 @@ export function Sidebar() {
           <Link to="/volunteer-opportunities" className={linkClass('/volunteer-opportunities')}>
             <HandHeart className="h-4 w-4 shrink-0" />
             Volunteer Roles
+          </Link>
+        )}
+        {user?.profile_type === 'resource_navigator' && (
+          <Link to="/caseload" className={linkClass('/caseload')}>
+            <ClipboardList className="h-4 w-4 shrink-0" />
+            My Caseload
           </Link>
         )}
         {user && (

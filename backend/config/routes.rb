@@ -57,6 +57,7 @@ Rails.application.routes.draw do
       get "my/applications", to: "my_applications#index"
       resources :saved_organizations, only: [:index, :create, :destroy]
       resources :org_followers, only: [:create, :destroy], param: :organization_id
+      resources :caseloads, only: [:index, :create, :update, :destroy]
       get "feed", to: "feed#index"
 
       resources :notifications, only: [:index, :update] do
