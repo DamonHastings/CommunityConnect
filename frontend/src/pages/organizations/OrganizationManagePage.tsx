@@ -312,24 +312,31 @@ function ProgramsTab({ orgId }: { orgId: number }) {
 
 /* ── Opportunities tab ──────────────────────────────────────────────────── */
 
-function OpportunitiesTab({ orgId }: { orgId: number }) {
+function OpportunitiesTab({ orgId, isFoundation }: { orgId: number; isFoundation?: boolean }) {
   const { data } = useOrganizationOpportunities(orgId)
-  const opps = data?.opportunities ?? []
+  const allOpps = data?.opportunities ?? []
+  const opps = isFoundation ? allOpps.filter((o) => o.opportunity_type === 'funding') : allOpps
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-gray-500">{opps.length} opportunit{opps.length !== 1 ? 'ies' : 'y'}</p>
+        <p className="text-sm text-gray-500">
+          {isFoundation
+            ? `${opps.length} funding opportunit${opps.length !== 1 ? 'ies' : 'y'}`
+            : `${opps.length} opportunit${opps.length !== 1 ? 'ies' : 'y'}`}
+        </p>
         <Link to={`/organizations/${orgId}/opportunities/new`}>
           <Button size="sm">
             <Plus className="mr-1 h-4 w-4" />
-            New Opportunity
+            {isFoundation ? 'New Funding Opportunity' : 'New Opportunity'}
           </Button>
         </Link>
       </div>
       {opps.length === 0 ? (
         <Card>
-          <CardBody className="py-10 text-center text-gray-500">No opportunities yet.</CardBody>
+          <CardBody className="py-10 text-center text-gray-500">
+            {isFoundation ? 'No funding opportunities yet.' : 'No opportunities yet.'}
+          </CardBody>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -700,7 +707,7 @@ function AnnouncementsTab({ orgId }: { orgId: number }) {
 
 type Tab = 'applications' | 'programs' | 'opportunities' | 'partners' | 'referrals' | 'announcements'
 
-const TABS: { id: Tab; label: string }[] = [
+const BASE_TABS: { id: Tab; label: string }[] = [
   { id: 'applications', label: 'Applications' },
   { id: 'programs', label: 'Programs' },
   { id: 'opportunities', label: 'Opportunities' },
@@ -728,6 +735,10 @@ export function OrganizationManagePage() {
     return null
   }
 
+  const isFoundation = org.org_type === 'foundation'
+  const TABS = isFoundation
+    ? BASE_TABS.map((t) => t.id === 'opportunities' ? { ...t, label: 'Funding' } : t)
+    : BASE_TABS
   const visibleTabs = isAdmin
     ? TABS
     : TABS.filter((t) => t.id === 'referrals')
@@ -777,7 +788,7 @@ export function OrganizationManagePage() {
       {/* Tab content */}
       {activeTab === 'applications' && <ApplicationsTab orgId={org.id} />}
       {activeTab === 'programs' && <ProgramsTab orgId={org.id} />}
-      {activeTab === 'opportunities' && <OpportunitiesTab orgId={org.id} />}
+      {activeTab === 'opportunities' && <OpportunitiesTab orgId={org.id} isFoundation={isFoundation} />}
       {activeTab === 'partners' && <PartnersTab orgId={org.id} />}
       {activeTab === 'referrals' && <ReferralsTab orgId={org.id} />}
       {activeTab === 'announcements' && <AnnouncementsTab orgId={org.id} />}

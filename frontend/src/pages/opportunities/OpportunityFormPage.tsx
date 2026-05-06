@@ -3,12 +3,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useCreateOpportunity } from '../../hooks/useOpportunities'
+import { useOrganization } from '../../hooks/useOrganizations'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { OPPORTUNITY_TYPE_LABELS } from '../../lib/utils'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -38,11 +39,18 @@ export function OpportunityFormPage() {
   const navigate = useNavigate()
   const [serverErrors, setServerErrors] = useState<string[]>([])
   const createMutation = useCreateOpportunity(orgId!)
+  const { data: org } = useOrganization(orgId!)
+  const isFoundation = org?.org_type === 'foundation'
 
-  const { register, watch, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, watch, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { status: 'open', remote: false },
   })
+
+  useEffect(() => {
+    if (isFoundation) reset({ status: 'open', remote: false, opportunity_type: 'funding' })
+  }, [isFoundation, reset])
+
   const watchedType = watch('opportunity_type')
 
   const onSubmit = async (data: FormData) => {
@@ -61,7 +69,9 @@ export function OpportunityFormPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Add Engagement Opportunity</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">
+        {isFoundation ? 'Add Funding Opportunity' : 'Add Engagement Opportunity'}
+      </h1>
 
       {serverErrors.length > 0 && (
         <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
