@@ -490,37 +490,69 @@ function NavigatorSection() {
 
 /* ── Onboarding checklist ───────────────────────────────────────────────── */
 
-const ONBOARDING_DISMISSED_KEY = 'onboarding_checklist_dismissed'
-
 function OnboardingChecklist() {
   const { user } = useAuth()
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(ONBOARDING_DISMISSED_KEY) === 'true')
+  const dismissedKey = user ? `onboarding_checklist_dismissed_${user.id}` : null
+  const [dismissed, setDismissed] = useState(() =>
+    dismissedKey ? localStorage.getItem(dismissedKey) === 'true' : false
+  )
 
   if (!user || dismissed) return null
-  if (user.profile_type !== 'volunteer' && user.profile_type !== 'resource_navigator') return null
-  if (user.intake_completed === true) return null
 
-  const isNavigator = user.profile_type === 'resource_navigator'
   const hasOrg = user.organizations.length > 0
   const profileComplete = !!(user.bio && (user.city || user.state))
+  const hasSpecialty = !!user.specialty
+  const hasAvailability = !!user.availability
+  const intakeDone = user.intake_completed === true
 
-  const steps = isNavigator
-    ? [
-        { label: 'Complete your profile', done: profileComplete, to: '/profile' },
-        { label: 'Create or join an organization', done: hasOrg, to: '/organizations/new' },
-        { label: 'Explore programs to refer clients', done: false, to: '/programs' },
+  let steps: { label: string; done: boolean; to: string }[] = []
+
+  switch (user.profile_type) {
+    case 'individual_seeker':
+      steps = [
+        { label: 'Complete intake questionnaire', done: intakeDone, to: '/intake' },
+        { label: 'Browse your matched organizations', done: false, to: '/organizations' },
+        { label: 'Apply to a program or service', done: false, to: '/programs' },
       ]
-    : [
-        { label: 'Complete your profile', done: profileComplete, to: '/profile' },
+      break
+    case 'individual_professional':
+      steps = [
+        { label: 'Add bio and specialty to your profile', done: profileComplete && hasSpecialty, to: '/profile' },
+        { label: 'Browse partnership opportunities', done: false, to: '/opportunities' },
+        { label: 'Apply to an opportunity', done: false, to: '/opportunities' },
+      ]
+      break
+    case 'volunteer':
+      steps = [
+        { label: 'Add availability and bio to your profile', done: profileComplete && hasAvailability, to: '/profile' },
         { label: 'Browse volunteer opportunities', done: false, to: '/volunteer-opportunities' },
         { label: 'Apply to an opportunity', done: false, to: '/volunteer-opportunities' },
       ]
+      break
+    case 'resource_navigator':
+      steps = [
+        { label: 'Complete your profile', done: profileComplete, to: '/profile' },
+        { label: 'Create or join an organization', done: hasOrg, to: '/organizations/new' },
+        { label: 'Add a client to your caseload', done: false, to: '/caseload' },
+      ]
+      break
+    case 'community_org':
+    case 'business_service_provider':
+      steps = [
+        { label: 'Create your organization profile', done: hasOrg, to: '/organizations/new' },
+        { label: 'Post your first opportunity', done: false, to: hasOrg ? `/organizations/${user.organizations[0]?.id}/manage` : '/organizations/new' },
+        { label: 'Connect with a partner organization', done: false, to: '/organizations' },
+      ]
+      break
+    default:
+      return null
+  }
 
   const doneCount = steps.filter((s) => s.done).length
   const allDone = doneCount === steps.length
 
   const dismiss = () => {
-    localStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true')
+    if (dismissedKey) localStorage.setItem(dismissedKey, 'true')
     setDismissed(true)
   }
 
@@ -655,17 +687,12 @@ function RightSidebar() {
 
   return (
     <div className="space-y-5">
+      <OnboardingChecklist />
       {showSeeker && <SeekerSection />}
       {isProfessional && <ProfessionalSection />}
-      {isVolunteer && (
-        <>
-          <OnboardingChecklist />
-          <VolunteerSection />
-        </>
-      )}
+      {isVolunteer && <VolunteerSection />}
       {isNavigator && (
         <>
-          <OnboardingChecklist />
           <NavigatorSection />
           <MyOrganizationsSection />
         </>
