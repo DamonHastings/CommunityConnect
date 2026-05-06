@@ -114,6 +114,55 @@ class Api::V1::FeedController < ApplicationController
         }
       end
 
+    # Withdrawal notifications for org admins/members
+    if user_org_ids.any?
+      ServiceApplication
+        .where(status: :withdrawn)
+        .where("updated_at > ?", LOOKBACK.ago)
+        .joins(:engagement_opportunity)
+        .where(engagement_opportunities: { organization_id: user_org_ids })
+        .includes(:user, engagement_opportunity: :organization)
+        .each do |app|
+          opp = app.engagement_opportunity
+          applicant = "#{app.user.first_name} #{app.user.last_name}".strip
+          items << {
+            type: "application_update",
+            id: "withdrawal_#{app.id}",
+            title: "Application Withdrawn",
+            body: "#{applicant} withdrew their application for \"#{opp.title}\".",
+            org_name: opp.organization.name,
+            org_id: opp.organization_id,
+            url: "/organizations/#{opp.organization_id}/manage",
+            tag: "yours",
+            created_at: app.updated_at,
+          }
+        end
+
+      ProgramApplication
+        .where(status: :withdrawn)
+        .where("updated_at > ?", LOOKBACK.ago)
+        .joins(program: :program_organizations)
+        .where(program_organizations: { organization_id: user_org_ids })
+        .includes(:user, program: :organization)
+        .each do |app|
+          prog = app.program
+          org = prog.organization
+          next unless org
+          applicant = "#{app.user.first_name} #{app.user.last_name}".strip
+          items << {
+            type: "application_update",
+            id: "prog_withdrawal_#{app.id}",
+            title: "Application Withdrawn",
+            body: "#{applicant} withdrew their application for the \"#{prog.title}\" program.",
+            org_name: org.name,
+            org_id: org.id,
+            url: "/organizations/#{org.id}/manage",
+            tag: "yours",
+            created_at: app.updated_at,
+          }
+        end
+    end
+
     # Partner connection requests for user's orgs
     if user_org_ids.any?
       PartnerConnection
