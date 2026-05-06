@@ -19,7 +19,7 @@ import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { ReferClientForm } from '../../components/referrals/ReferClientForm'
 import { CATEGORY_LABELS, ORG_TYPE_LABELS, formatDate } from '../../lib/utils'
-import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare, Bell, BellOff } from 'lucide-react'
+import { MapPin, Globe, Mail, Phone, Users, Calendar, Pencil, ChevronDown, ChevronRight, Bookmark, Star, Megaphone, Trash2, Handshake, UserCheck, MessageSquare, Bell, BellOff, X } from 'lucide-react'
 import type { EngagementOpportunity } from '../../types'
 
 function OppApplicationsPanel({ opp }: { opp: EngagementOpportunity }) {
@@ -363,6 +363,8 @@ export function OrganizationProfilePage() {
   const viewerAdminOrg = user?.organizations.find((m) => m.role === 'admin' && m.id !== Number(id))
   const { data: connectionsData } = useOrgConnections(viewerAdminOrg?.id ?? 0)
   const sendRequest = useSendConnectionRequest(viewerAdminOrg?.id ?? 0)
+  const [serviceMessage, setServiceMessage] = useState('')
+  const [showServiceForm, setShowServiceForm] = useState(false)
 
   const handleMessageOrg = () => {
     if (!org?.primary_admin) return
@@ -468,7 +470,7 @@ export function OrganizationProfilePage() {
               Message
             </Button>
           )}
-          {viewerAdminOrg && !existingConnection && (
+          {viewerAdminOrg && !existingConnection && org.org_type !== 'business' && (
             <Button
               variant="outline"
               size="sm"
@@ -477,6 +479,16 @@ export function OrganizationProfilePage() {
             >
               <Handshake className="mr-1.5 h-4 w-4" />
               Request Partnership
+            </Button>
+          )}
+          {viewerAdminOrg && !existingConnection && org.org_type === 'business' && !showServiceForm && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowServiceForm(true)}
+            >
+              <Handshake className="mr-1.5 h-4 w-4" />
+              Request services
             </Button>
           )}
           {viewerAdminOrg && existingConnection && (
@@ -509,6 +521,42 @@ export function OrganizationProfilePage() {
           )}
         </div>
       </div>
+
+      {viewerAdminOrg && !existingConnection && org.org_type === 'business' && showServiceForm && (
+        <Card>
+          <CardBody className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-heading">Request services from {org.name}</p>
+              <button onClick={() => setShowServiceForm(false)} className="text-muted hover:text-heading">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <textarea
+              value={serviceMessage}
+              onChange={(e) => setServiceMessage(e.target.value)}
+              rows={3}
+              placeholder="Describe what you're looking for…"
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-heading placeholder:text-muted focus:border-primary focus:outline-none"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                disabled={sendRequest.isPending}
+                onClick={() =>
+                  sendRequest.mutate(
+                    { target_org_id: org.id, message: serviceMessage || undefined },
+                    { onSuccess: () => { setShowServiceForm(false); setServiceMessage('') } }
+                  )
+                }
+              >
+                <Handshake className="mr-1.5 h-3.5 w-3.5" />
+                Send request
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowServiceForm(false)}>Cancel</Button>
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
