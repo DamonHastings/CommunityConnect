@@ -7,7 +7,8 @@ class Notification < ApplicationRecord
     application_update: 1,
     referral_received: 2,
     partner_request: 3,
-    referral_accepted: 4
+    referral_accepted: 4,
+    new_content: 5
   }
 
   scope :unread, -> { where(read_at: nil) }

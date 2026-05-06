@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, MessageSquare, CheckCircle, Users, ArrowRight } from 'lucide-react'
+import { Bell, MessageSquare, CheckCircle, Users, ArrowRight, Megaphone } from 'lucide-react'
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '../../hooks/useNotifications'
 import type { Notification, NotificationType } from '../../types'
 
@@ -23,6 +23,7 @@ function NotificationIcon({ type }: { type: NotificationType }) {
     case 'referral_received': return <ArrowRight className={`${cls} text-blue-500`} />
     case 'referral_accepted': return <CheckCircle className={`${cls} text-teal-500`} />
     case 'partner_request':   return <Users className={`${cls} text-purple-500`} />
+    case 'new_content':       return <Megaphone className={`${cls} text-orange-500`} />
     default:                  return <Bell className={`${cls} text-gray-400`} />
   }
 }

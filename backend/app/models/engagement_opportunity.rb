@@ -16,11 +16,26 @@ class EngagementOpportunity < ApplicationRecord
     filled: 2
   }
 
+  after_create :notify_followers
+
   validates :title, presence: true
   validates :organization, presence: true
   validate :end_date_after_start_date
-  
+
   private
+
+  def notify_followers
+    organization.org_followers.includes(:user).each do |follower|
+      Notification.create!(
+        user: follower.user,
+        notification_type: :new_content,
+        title: "New opportunity from #{organization.name}",
+        body: title.truncate(100),
+        url: "/organizations/#{organization.id}",
+        actor_name: organization.name
+      )
+    end
+  end
 
   def end_date_after_start_date
     return if end_date.blank? || start_date.blank?

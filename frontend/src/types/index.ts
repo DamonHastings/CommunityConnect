@@ -284,6 +284,7 @@ export type NotificationType =
   | 'referral_received'
   | 'partner_request'
   | 'referral_accepted'
+  | 'new_content'
 
 export interface Notification {
   id: number
