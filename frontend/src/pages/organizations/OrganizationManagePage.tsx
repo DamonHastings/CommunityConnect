@@ -51,7 +51,7 @@ function GrantApplicationCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-semibold text-gray-900">{app.applicant_org?.name ?? app.applicant.name}</p>
-          <p className="text-xs text-gray-500">Applied by: {app.applicant.name} · {app.applicant.email}</p>
+          <p className="text-xs text-gray-500">Applied by: <Link to={`/users/${app.applicant.id}`} className="hover:underline hover:text-primary">{app.applicant.name}</Link> · {app.applicant.email}</p>
           {app.message && <p className="mt-1 text-gray-600 line-clamp-2">{app.message}</p>}
           <p className="mt-0.5 text-xs text-gray-400">Submitted {formatDate(app.created_at)}</p>
         </div>
@@ -160,7 +160,7 @@ function OppApplicationsList({ opp, onMessage }: { opp: EngagementOpportunity; o
         <div key={app.id} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-medium text-gray-900">{app.applicant.name}</p>
+              <Link to={`/users/${app.applicant.id}`} className="font-medium text-gray-900 hover:text-primary hover:underline">{app.applicant.name}</Link>
               <p className="text-gray-500 text-xs">{app.applicant.email}</p>
               {app.applicant_org && (
                 <p className="text-xs text-indigo-600">on behalf of {app.applicant_org.name}</p>
@@ -210,7 +210,7 @@ function ProgApplicationsList({ program, onMessage }: { program: Program; onMess
         <div key={app.id} className="rounded-lg border border-border bg-bg px-3 py-2 text-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-medium text-heading">{app.applicant.name}</p>
+              <Link to={`/users/${app.applicant.id}`} className="font-medium text-heading hover:text-primary hover:underline">{app.applicant.name}</Link>
               <p className="text-muted text-xs">{app.applicant.email}</p>
               {app.message && <p className="mt-1 text-secondary line-clamp-2">{app.message}</p>}
               <p className="mt-1 text-xs text-muted">Applied {formatDate(app.created_at)}</p>
