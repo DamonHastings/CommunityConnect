@@ -26,7 +26,8 @@ export function useSendReferral(orgId: number | string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: {
-      referred_user_email: string
+      referred_user_email?: string
+      referred_user_id?: number
       message?: string
       target_type?: string
       target_id?: number
