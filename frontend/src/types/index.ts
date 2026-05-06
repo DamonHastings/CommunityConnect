@@ -199,6 +199,7 @@ export interface Program {
   title: string
   description: string | null
   goals: string | null
+  outcomes: string | null
   program_type: ProgramType
   status: ProgramStatus
   capacity: number | null

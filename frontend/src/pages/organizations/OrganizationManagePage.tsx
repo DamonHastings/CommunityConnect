@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useOrganization, useOrganizations } from '../../hooks/useOrganizations'
 import { useOrganizationOpportunities } from '../../hooks/useOpportunities'
-import { useOrganizationPrograms } from '../../hooks/usePrograms'
+import { useOrganizationPrograms, useUpdateProgram } from '../../hooks/usePrograms'
 import { useOpportunityApplications, useUpdateApplication } from '../../hooks/useApplications'
 import { useProgramApplications, useUpdateProgramApplication } from '../../hooks/useProgramApplications'
 import { useOrgAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '../../hooks/useAnnouncements'
@@ -16,7 +16,7 @@ import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { formatDate } from '../../lib/utils'
-import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare, BarChart2, ChevronDown, ChevronRight } from 'lucide-react'
 import type { EngagementOpportunity, Program } from '../../types'
 
 /* ── Applications panel ─────────────────────────────────────────────────── */
@@ -214,6 +214,67 @@ function ApplicationsTab({ orgId }: { orgId: number }) {
 
 /* ── Programs tab ───────────────────────────────────────────────────────── */
 
+function OutcomesPanel({ program }: { program: Program }) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState(program.outcomes ?? '')
+  const [editing, setEditing] = useState(false)
+  const update = useUpdateProgram(program.id)
+
+  const REPORTABLE_STATUSES = ['active', 'completed', 'cancelled']
+  if (!REPORTABLE_STATUSES.includes(program.status)) return null
+
+  function handleSave() {
+    update.mutate({ outcomes: draft }, { onSuccess: () => setEditing(false) })
+  }
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+      >
+        <BarChart2 className="h-3.5 w-3.5" />
+        {program.outcomes ? 'Outcomes recorded' : 'Record outcomes'}
+        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+      </button>
+
+      {open && (
+        <div className="mt-3">
+          {editing ? (
+            <div className="space-y-2">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                rows={4}
+                placeholder="Describe the outcomes, impact, and learnings from this program…"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleSave} disabled={update.isPending}>Save</Button>
+                <Button size="sm" variant="outline" onClick={() => { setDraft(program.outcomes ?? ''); setEditing(false) }}>Cancel</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-gray-50 p-3">
+              {program.outcomes ? (
+                <p className="whitespace-pre-wrap text-sm text-gray-700">{program.outcomes}</p>
+              ) : (
+                <p className="text-sm text-gray-400 italic">No outcomes recorded yet.</p>
+              )}
+              <button
+                onClick={() => setEditing(true)}
+                className="mt-2 text-xs text-indigo-600 hover:text-indigo-800"
+              >
+                {program.outcomes ? 'Edit' : 'Add outcomes'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ProgramsTab({ orgId }: { orgId: number }) {
   const { data } = useOrganizationPrograms(orgId)
   const programs = data?.programs ?? []
@@ -235,7 +296,14 @@ function ProgramsTab({ orgId }: { orgId: number }) {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {programs.map((p) => <ProgramCard key={p.id} program={p} />)}
+          {programs.map((p) => (
+            <div key={p.id} className="flex flex-col">
+              <ProgramCard program={p} />
+              <div className="-mt-1 rounded-b-xl border border-t-0 border-gray-200 bg-white px-4 pb-3">
+                <OutcomesPanel program={p} />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

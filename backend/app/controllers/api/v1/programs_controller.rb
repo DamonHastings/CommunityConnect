@@ -68,7 +68,7 @@ class Api::V1::ProgramsController < ApplicationController
 
   def program_params
     params.require(:program).permit(
-      :title, :description, :goals, :program_type, :status,
+      :title, :description, :goals, :outcomes, :program_type, :status,
       :capacity, :city, :state, :remote, :contact_email,
       :application_opens_at, :application_closes_at,
       :starts_on, :ends_on

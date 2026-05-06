@@ -1,7 +1,7 @@
 class ProgramSerializer
   include JSONAPI::Serializer
 
-  attributes :id, :title, :description, :goals, :program_type, :status,
+  attributes :id, :title, :description, :goals, :outcomes, :program_type, :status,
              :capacity, :city, :state, :remote, :contact_email,
              :application_opens_at, :application_closes_at,
              :starts_on, :ends_on, :created_at
