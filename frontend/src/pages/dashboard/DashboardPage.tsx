@@ -386,6 +386,18 @@ function VolunteerSection() {
         </Card>
       )}
 
+      {(user?.total_volunteer_hours ?? 0) > 0 && (
+        <Card>
+          <CardBody className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 shrink-0 text-success-text" />
+            <div>
+              <p className="text-xs text-muted">Total volunteer hours</p>
+              <p className="text-lg font-bold text-heading">{user!.total_volunteer_hours}</p>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h2 className="flex items-center gap-1.5 text-sm font-semibold text-heading">

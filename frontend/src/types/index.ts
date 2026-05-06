@@ -35,6 +35,7 @@ export interface User {
   intake_completed?: boolean | null
   saved_org_ids?: number[]
   followed_org_ids?: number[]
+  total_volunteer_hours?: number
 }
 
 export type HousingStatus =

@@ -31,4 +31,10 @@ class UserSerializer
   attribute :followed_org_ids do |user|
     user.org_followers.pluck(:organization_id)
   end
+
+  attribute :total_volunteer_hours do |user|
+    VolunteerHour.joins(:service_application)
+                 .where(service_applications: { user_id: user.id })
+                 .sum(:hours).to_f
+  end
 end
