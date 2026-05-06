@@ -26,7 +26,7 @@ class Api::V1::VolunteerHoursController < ApplicationController
   private
 
   def set_application
-    @application = current_user.service_applications.find(params[:application_id])
+    @application = current_user.service_applications.find(params[:my_application_id])
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
   end
