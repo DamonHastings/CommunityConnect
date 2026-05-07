@@ -14,10 +14,10 @@ export default defineConfig({
     video: "on",
     screenshot: "on",
     trace: "off",
-    actionTimeout: 15_000,
+    actionTimeout: 30_000,
     navigationTimeout: 30_000,
     launchOptions: {
-      // slowMo: 100,
+      slowMo: 250,
     },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

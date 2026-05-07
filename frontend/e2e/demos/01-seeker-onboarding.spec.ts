@@ -4,8 +4,12 @@
  * personalised dashboard with matched organisations.
  */
 import { test, expect, type Locator } from "@playwright/test";
+import { cleanupDemoData } from "../helpers/demoCleanup";
 
 const PAUSE = (ms = 1200) => new Promise((r) => setTimeout(r, ms));
+
+test.beforeEach(({ request }) => cleanupDemoData(request));
+test.afterEach(({ request }) => cleanupDemoData(request));
 
 const smoothScrollTo = async (locator: Locator, pauseMs = 700) => {
   await locator.evaluate((element) => {

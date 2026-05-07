@@ -37,7 +37,7 @@ function VolunteerHoursPanel({ applicationId }: { applicationId: number }) {
   const [hours, setHours] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [notes, setNotes] = useState('')
-  const { data, isLoading } = useVolunteerHours(applicationId, open)
+  const { data, isLoading } = useVolunteerHours(applicationId)
   const logHours = useLogHours(applicationId)
   const deleteHours = useDeleteHours(applicationId)
 

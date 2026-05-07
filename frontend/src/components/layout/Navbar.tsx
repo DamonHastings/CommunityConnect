@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import ancchorBrand from "../../assets/ancchor-brand-circle.svg";
+import ancchorBrand from "../../assets/ancchor-brand-tilt.svg";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../ui/Button";
 import { NotificationBell } from "./NotificationBell";

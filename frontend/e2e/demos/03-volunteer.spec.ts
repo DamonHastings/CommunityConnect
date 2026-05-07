@@ -5,9 +5,13 @@
  * panel → log 2.5 more hours → total updates to 10h.
  */
 import { test, expect, type Locator } from '@playwright/test'
+import { cleanupDemoData } from '../helpers/demoCleanup'
 import { loginAs } from '../helpers/auth'
 
 const PAUSE = (ms = 1200) => new Promise((r) => setTimeout(r, ms))
+
+test.beforeEach(({ request }) => cleanupDemoData(request))
+test.afterEach(({ request }) => cleanupDemoData(request))
 
 const smoothScrollTo = async (locator: Locator, pauseMs = 700) => {
   await locator.evaluate((element) => {
@@ -58,7 +62,8 @@ test('Volunteer browses opportunities and logs hours', async ({ page }) => {
   await expect(page.getByText('Weekend Food Pantry Volunteer')).toBeVisible({ timeout: 10000 })
   await PAUSE(1200)
 
-  // Expand the hours panel — toggle button shows "7.5h logged"
+  // Expand the hours panel — seeded hours are summarized on load.
+  await expect(page.getByText('7.5h logged')).toBeVisible({ timeout: 8000 })
   await smoothClick(page.getByText('7.5h logged'))
   await PAUSE(1000)
 
@@ -67,6 +72,9 @@ test('Volunteer browses opportunities and logs hours', async ({ page }) => {
   await PAUSE(1500)
 
   // ── Log 2.5 new hours ─────────────────────────────────────────────────────
+  await smoothClick(page.getByText('Add entry'))
+  await PAUSE(600)
+
   await smoothFill(page.getByPlaceholder('Hours'), '2.5')
   await PAUSE(600)
 

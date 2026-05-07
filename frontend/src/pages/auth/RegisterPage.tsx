@@ -134,7 +134,9 @@ export function RegisterPage() {
                             : 'border-gray-200 hover:border-gray-300',
                         ].join(' ')}
                       >
-                        <p className="font-medium text-gray-900">{opt.label}</p>
+                        <span role="heading" aria-level={3} className="block font-medium text-gray-900">
+                          {opt.label}
+                        </span>
                         <p className="mt-0.5 text-sm text-gray-500">{opt.description}</p>
                       </button>
                     ))}

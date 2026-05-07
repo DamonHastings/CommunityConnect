@@ -62,6 +62,7 @@ Rails.application.routes.draw do
       resources :org_followers, only: [:create, :destroy], param: :organization_id
       resources :caseloads, only: [:index, :create, :update, :destroy]
       get "feed", to: "feed#index"
+      post "demo/cleanup", to: "demo_cleanups#create" unless Rails.env.production?
 
       resources :notifications, only: [:index, :update] do
         collection do

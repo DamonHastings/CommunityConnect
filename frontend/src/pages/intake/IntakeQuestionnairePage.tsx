@@ -245,10 +245,11 @@ export function IntakeQuestionnairePage() {
             <CardHeader>Your goals</CardHeader>
             <CardBody className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="intake-goals" className="mb-1 block text-sm font-medium text-gray-700">
                   What are you hoping to achieve? <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <textarea
+                  id="intake-goals"
                   rows={3}
                   value={data.goals}
                   onChange={(e) => set('goals', e.target.value)}
@@ -258,10 +259,11 @@ export function IntakeQuestionnairePage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="intake-barriers" className="mb-1 block text-sm font-medium text-gray-700">
                   Are there any obstacles we should know about? <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <textarea
+                  id="intake-barriers"
                   rows={3}
                   value={data.barriers}
                   onChange={(e) => set('barriers', e.target.value)}
