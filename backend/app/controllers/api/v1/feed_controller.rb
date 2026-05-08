@@ -118,7 +118,7 @@ class Api::V1::FeedController < ApplicationController
     if user_org_ids.any?
       ServiceApplication
         .where(status: :withdrawn)
-        .where("updated_at > ?", LOOKBACK.ago)
+        .where("service_applications.updated_at > ?", LOOKBACK.ago)
         .joins(:engagement_opportunity)
         .where(engagement_opportunities: { organization_id: user_org_ids })
         .includes(:user, engagement_opportunity: :organization)
@@ -140,7 +140,7 @@ class Api::V1::FeedController < ApplicationController
 
       ProgramApplication
         .where(status: :withdrawn)
-        .where("updated_at > ?", LOOKBACK.ago)
+        .where("program_applications.updated_at > ?", LOOKBACK.ago)
         .joins(program: :program_organizations)
         .where(program_organizations: { organization_id: user_org_ids })
         .includes(:user, program: :organization)

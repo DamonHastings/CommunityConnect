@@ -52,6 +52,8 @@ class Api::V1::DemoCleanupsController < ApplicationController
         .destroy_all
     end
 
+    Conversation.between(navigator, jason)&.destroy if navigator && jason
+
     summer_program = Program.find_by(title: "Summer Job Training")
     if nav_org && jason && summer_program
       Referral.where(
@@ -76,25 +78,10 @@ class Api::V1::DemoCleanupsController < ApplicationController
   def refresh_feed_seed_data(food_bank, youth_center, foundation, biz_corp)
     now = Time.current
 
-    [
-      food_bank&.engagement_opportunities&.where(title: [
-        "Weekend Food Pantry Volunteer",
-        "Meal Delivery Driver",
-        "Corporate Partnership Opportunity"
-      ]),
-      youth_center&.engagement_opportunities&.where(title: "Youth Mentorship Opportunity"),
-      foundation&.engagement_opportunities&.where(title: "Community Tech Resources Grant"),
-      youth_center&.programs&.where(title: ["Summer Job Training", "Weekly Tutoring Program"])
-    ].compact.each do |scope|
-      scope.update_all(created_at: now, updated_at: now)
-    end
-
-    [
-      food_bank&.announcements&.where(title: "Holiday Food Drive"),
-      youth_center&.announcements&.where(title: "Summer Program Applications Open"),
-      foundation&.announcements&.where(title: "Grant Cycle Open")
-    ].compact.each do |scope|
-      scope.update_all(created_at: now, updated_at: now, published_at: now)
+    [food_bank, youth_center, foundation].compact.each do |org|
+      org.engagement_opportunities.update_all(created_at: now, updated_at: now)
+      org.programs.update_all(created_at: now, updated_at: now)
+      org.announcements.update_all(created_at: now, updated_at: now, published_at: now)
     end
 
     if food_bank && youth_center
