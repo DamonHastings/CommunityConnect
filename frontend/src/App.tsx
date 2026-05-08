@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { Layout } from './components/layout/Layout'
+import { LandingLayout } from './components/layout/LandingLayout'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
@@ -54,8 +55,10 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<LandingLayout />}>
         <Route path="/" element={<LandingPage />} />
+      </Route>
+      <Route element={<Layout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/organizations" element={<OrganizationsPage />} />
