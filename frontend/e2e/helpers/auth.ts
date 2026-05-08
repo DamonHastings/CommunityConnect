@@ -20,6 +20,33 @@ export async function loginAs(
   await page.goto(redirectTo)
 }
 
+export async function registerAdvocate(page: Page, redirectTo = '/advocate/dashboard') {
+  const email = `demo_advocate_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`
+  const registerRes = await page.request.post(`${API_BASE_URL}/auth/register`, {
+    headers: { 'Content-Type': 'application/json' },
+    data: JSON.stringify({
+      user: {
+        email,
+        password: PASSWORD,
+        password_confirmation: PASSWORD,
+        first_name: 'Alex',
+        last_name: 'Demo',
+        profile_type: 'advocate',
+      },
+    }),
+  })
+  if (!registerRes.ok()) throw new Error(`Registration failed for ${email}: ${registerRes.status()}`)
+
+  const token = registerRes.headers()['authorization']?.replace('Bearer ', '') ?? ''
+  if (!token) throw new Error(`Registration did not return an auth token for ${email}`)
+
+  await page.goto('/')
+  await page.evaluate((t) => localStorage.setItem('auth_token', t), token)
+  await page.goto(redirectTo)
+
+  return { email, token }
+}
+
 export async function registerSeekerWithIntake(page: Page, redirectTo = '/dashboard') {
   const email = `demo_seeker_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`
   const registerRes = await page.request.post(`${API_BASE_URL}/auth/register`, {
