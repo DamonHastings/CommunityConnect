@@ -70,6 +70,38 @@ class Api::V1::DemoCleanupsController < ApplicationController
     Notification.where(title: "New announcement from City Food Bank", body: "Summer Volunteer Drive — Join Us!").destroy_all
     Notification.where(title: "New opportunity from City Food Bank", body: "Holiday Food Box Packing").destroy_all
 
+    # Clean up advocate demo users and their client profiles
+    User.where("email LIKE ?", "demo_advocate_%@example.com").destroy_all
+
+    # Clean up demo-created cohorts (keep the seeded "Spring 2026 Cohort")
+    if youth_center
+      youth_center_program_ids = youth_center.programs.pluck(:id)
+      Cohort.where(program_id: youth_center_program_ids)
+            .where.not(name: "Spring 2026 Cohort")
+            .destroy_all
+    end
+
+    # Clean up demo-created milestones (keep only the three seeded ones)
+    summer_program = Program.find_by(title: "Summer Job Training")
+    if summer_program
+      seeded_titles = ["Orientation", "Midpoint Check-In", "Graduation"]
+      summer_program.program_milestones.where.not(title: seeded_titles).destroy_all
+
+      if jason
+        milestone_ids = summer_program.program_milestones.pluck(:id)
+        MilestoneCompletion
+          .where(milestone_id: milestone_ids)
+          .where.not(user: jason)
+          .destroy_all
+      end
+    end
+
+    # Clean up demo-created tasks
+    User.where("email LIKE ?", "demo_%@example.com").each do |u|
+      u.user_tasks.destroy_all
+    end
+    jason&.user_tasks&.where(source_type: nil)&.destroy_all
+
     head :no_content
   end
 
