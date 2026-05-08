@@ -5,6 +5,7 @@ import { useApplyToProgram, useWithdrawProgramApplication, useProgramApplication
 import { useAddProgramOrganization, useRemoveProgramOrganization } from '../../hooks/useProgramOrganizations'
 import { useOrganizations } from '../../hooks/useOrganizations'
 import { useAuth } from '../../contexts/AuthContext'
+import { useMilestones, useCompleteMilestone, useUncompleteMilestone } from '../../hooks/useMilestones'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -13,7 +14,67 @@ import { ReferClientForm } from '../../components/referrals/ReferClientForm'
 import { Select } from '../../components/ui/Select'
 import { PROGRAM_TYPE_LABELS, PROGRAM_STATUS_LABELS, formatDate } from '../../lib/utils'
 import { Calendar, MapPin, Mail, Building2, ArrowLeft, Users, Pencil, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Undo2, X } from 'lucide-react'
-import type { ApplicationStatus } from '../../types'
+import type { ApplicationStatus, ProgramMilestone } from '../../types'
+
+function MilestoneProgress({ programId }: { programId: number }) {
+  const { data } = useMilestones(programId)
+  const completeMilestone = useCompleteMilestone()
+  const uncompleteMilestone = useUncompleteMilestone()
+  const milestones: ProgramMilestone[] = data?.milestones ?? []
+
+  if (milestones.length === 0) return null
+
+  const completedCount = milestones.filter((m) => m.completed_by_current_user).length
+  const pct = Math.round((completedCount / milestones.length) * 100)
+
+  return (
+    <div className="border-t pt-4">
+      <h3 className="mb-3 font-semibold text-gray-900">Your Progress</h3>
+      <div className="mb-3">
+        <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
+          <span>{completedCount} of {milestones.length} milestones complete</span>
+          <span>{pct}%</span>
+        </div>
+        <div className="h-2 w-full rounded-full bg-gray-200">
+          <div
+            className="h-2 rounded-full bg-indigo-600 transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        {milestones.map((m) => (
+          <div key={m.id} className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+            <button
+              onClick={() => {
+                if (m.completed_by_current_user) {
+                  uncompleteMilestone.mutate({ milestoneId: m.id, completionId: 0 })
+                } else {
+                  completeMilestone.mutate(m.id)
+                }
+              }}
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                m.completed_by_current_user
+                  ? 'border-indigo-600 bg-indigo-600 text-white'
+                  : 'border-gray-300 bg-white'
+              }`}
+            >
+              {m.completed_by_current_user && <CheckCircle className="h-3 w-3" />}
+            </button>
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-medium ${m.completed_by_current_user ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                {m.title}
+              </p>
+              {m.due_date && (
+                <p className="text-xs text-gray-400">Due {new Date(m.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 const STATUS_VARIANTS: Record<string, 'warning' | 'info' | 'success' | 'default' | 'danger'> = {
   draft: 'warning', published: 'info', active: 'success', completed: 'default', cancelled: 'danger',
@@ -342,6 +403,10 @@ export function ProgramDetailPage() {
                 )
               ) : null}
             </div>
+          )}
+
+          {myApp?.status === 'approved' && !isAdmin && (
+            <MilestoneProgress programId={Number(id)} />
           )}
 
           {navigatorOrg && !isAdmin && (

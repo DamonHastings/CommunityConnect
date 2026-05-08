@@ -16,7 +16,7 @@ import { Building2, Pencil, X, Check, RefreshCw } from 'lucide-react'
 import type { ProfileType } from '../../types'
 
 const schema = z.object({
-  profile_type: z.enum(['individual_seeker', 'individual_professional', 'community_org', 'business_service_provider', 'volunteer', 'resource_navigator']),
+  profile_type: z.enum(['individual_seeker', 'individual_professional', 'community_org', 'business_service_provider', 'volunteer', 'resource_navigator', 'advocate']),
   bio: z.string().max(500, 'Bio must be 500 characters or less').optional(),
   phone: z.string().optional(),
   city: z.string().optional(),

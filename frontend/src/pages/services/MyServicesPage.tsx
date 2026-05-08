@@ -5,13 +5,15 @@ import { useMyProgramApplications, useWithdrawProgramApplication } from '../../h
 import { useSavedOrganizations, useUnsaveOrganization } from '../../hooks/useSavedOrganizations'
 import { useMyReferrals, useUpdateReferral } from '../../hooks/useReferrals'
 import { useVolunteerHours, useLogHours, useDeleteHours } from '../../hooks/useVolunteerHours'
+import { useUserTasks, useUpdateUserTask, useCreateUserTask } from '../../hooks/useUserTasks'
+import { useMilestones } from '../../hooks/useMilestones'
 import { Card, CardBody } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { OrganizationCard } from '../../components/organizations/OrganizationCard'
 import { formatDate } from '../../lib/utils'
-import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck, Timer, Trash2, Plus, DollarSign } from 'lucide-react'
+import { ClipboardList, Bookmark, ChevronDown, ChevronRight, Clock, CheckCircle, GraduationCap, UserCheck, Timer, Trash2, Plus, DollarSign, ListTodo } from 'lucide-react'
 import type { ApplicationStatus, ServiceApplication, ProgramApplication } from '../../types'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'default' }> = {
@@ -140,6 +142,127 @@ function VolunteerHoursPanel({ applicationId }: { applicationId: number }) {
         </div>
       )}
     </div>
+  )
+}
+
+function ProgramMilestoneProgress({ programId }: { programId: number }) {
+  const { data } = useMilestones(programId)
+  const milestones = data?.milestones ?? []
+  if (milestones.length === 0) return null
+  const completed = milestones.filter((m) => m.completed_by_current_user).length
+  const pct = Math.round((completed / milestones.length) * 100)
+  return (
+    <div className="mt-2 border-t border-gray-100 pt-2">
+      <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
+        <span>Progress: {completed}/{milestones.length} milestones</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-gray-200">
+        <div className="h-1.5 rounded-full bg-indigo-500 transition-all" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function TasksSection() {
+  const { data } = useUserTasks()
+  const updateTask = useUpdateUserTask()
+  const createTask = useCreateUserTask()
+  const [showForm, setShowForm] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const tasks = data?.tasks ?? []
+  const incomplete = tasks.filter((t) => !t.completed)
+  const complete = tasks.filter((t) => t.completed)
+
+  function handleAdd() {
+    if (!newTitle.trim()) return
+    createTask.mutate({ title: newTitle.trim() }, { onSuccess: () => { setNewTitle(''); setShowForm(false) } })
+  }
+
+  if (tasks.length === 0 && !showForm) {
+    return (
+      <section>
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <ListTodo className="h-5 w-5 text-indigo-600" />
+            Tasks & Deadlines
+          </h2>
+          <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            Add task
+          </Button>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          <ListTodo className="h-5 w-5 text-indigo-600" />
+          Tasks & Deadlines
+        </h2>
+        <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+          <Plus className="mr-1 h-3.5 w-3.5" />
+          Add task
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {incomplete.map((task) => {
+          const isOverdue = task.due_date && new Date(task.due_date) < new Date()
+          return (
+            <Card key={task.id}>
+              <CardBody className="flex items-center gap-3 py-3">
+                <button
+                  onClick={() => updateTask.mutate({ id: task.id, completed: true })}
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-indigo-400"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">{task.title}</p>
+                  {task.due_date && (
+                    <p className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-400'}`}>
+                      {isOverdue ? 'Overdue · ' : 'Due '}
+                      {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  )}
+                  {task.source_type === 'Program' && (
+                    <Link to={`/programs/${task.source_id}`} className="text-xs text-indigo-500 hover:underline">
+                      View program
+                    </Link>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+          )
+        })}
+        {complete.length > 0 && (
+          <div className="space-y-1">
+            {complete.map((task) => (
+              <div key={task.id} className="flex items-center gap-3 px-1 py-1 text-sm text-gray-400">
+                <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                <span className="line-through">{task.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {showForm && (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              placeholder="New task title…"
+              autoFocus
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+            <Button size="sm" onClick={handleAdd} disabled={createTask.isPending}>Add</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 
@@ -307,27 +430,32 @@ export function MyServicesPage() {
                     const cfg = STATUS_CONFIG[app.status]
                     return (
                       <Card key={app.id}>
-                        <CardBody className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <Link to={`/programs/${app.program.id}`} className="font-semibold text-gray-900 hover:text-indigo-600">
-                              {app.program.title}
-                            </Link>
-                            <p className="text-sm text-gray-500">
-                              <Link to={`/organizations/${app.program.organization.id}`} className="hover:text-indigo-600">
-                                {app.program.organization.name}
+                        <CardBody className="py-3">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <Link to={`/programs/${app.program.id}`} className="font-semibold text-gray-900 hover:text-indigo-600">
+                                {app.program.title}
                               </Link>
-                            </p>
-                            <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                              <p className="text-sm text-gray-500">
+                                <Link to={`/organizations/${app.program.organization.id}`} className="hover:text-indigo-600">
+                                  {app.program.organization.name}
+                                </Link>
+                              </p>
+                              <p className="mt-0.5 text-xs text-gray-400">Applied {formatDate(app.created_at)}</p>
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-2">
+                              <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                              {app.status === 'pending' && (
+                                <Button size="sm" variant="outline"
+                                  onClick={() => setPendingWithdrawProgram(app)}>
+                                  Withdraw
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex shrink-0 flex-col items-end gap-2">
-                            <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                            {app.status === 'pending' && (
-                              <Button size="sm" variant="outline"
-                                onClick={() => setPendingWithdrawProgram(app)}>
-                                Withdraw
-                              </Button>
-                            )}
-                          </div>
+                          {app.status === 'approved' && (
+                            <ProgramMilestoneProgress programId={app.program.id} />
+                          )}
                         </CardBody>
                       </Card>
                     )
@@ -357,6 +485,9 @@ export function MyServicesPage() {
               )}
             </section>
           )}
+
+          {/* Tasks */}
+          <TasksSection />
 
           {/* Referrals */}
           {referrals.length > 0 && (

@@ -89,6 +89,12 @@ export function Sidebar() {
             My Caseload
           </Link>
         )}
+        {user?.profile_type === 'advocate' && (
+          <Link to="/advocate/dashboard" className={linkClass('/advocate/dashboard')}>
+            <Users className="h-4 w-4 shrink-0" />
+            My Clients
+          </Link>
+        )}
         {user && (
           <Link
             to="/messages"

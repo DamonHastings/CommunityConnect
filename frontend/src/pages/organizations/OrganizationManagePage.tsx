@@ -10,14 +10,16 @@ import { useOrgConnections, useUpdateConnectionRequest } from '../../hooks/usePa
 import { useOrgReferrals, useSendReferral } from '../../hooks/useReferrals'
 import { useStartConversation } from '../../hooks/useMessages'
 import { useAuth } from '../../contexts/AuthContext'
+import { useCohorts, useCreateCohort, useAddCohortMember, useRemoveCohortMember } from '../../hooks/useCohorts'
+import { useMilestones, useCreateMilestone, useDeleteMilestone } from '../../hooks/useMilestones'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { OpportunityCard } from '../../components/opportunities/OpportunityCard'
 import { ProgramCard } from '../../components/programs/ProgramCard'
 import { formatDate } from '../../lib/utils'
-import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare, BarChart2, ChevronDown, ChevronRight, DollarSign } from 'lucide-react'
-import type { EngagementOpportunity, Program, ServiceApplication } from '../../types'
+import { ArrowLeft, Plus, Trash2, CheckCircle, XCircle, Megaphone, Handshake, Send, Users, MessageSquare, BarChart2, ChevronDown, ChevronRight, DollarSign, Flag } from 'lucide-react'
+import type { EngagementOpportunity, Program, ServiceApplication, Cohort, ProgramMilestone } from '../../types'
 
 /* ── Applications panel ─────────────────────────────────────────────────── */
 
@@ -420,6 +422,8 @@ function ProgramsTab({ orgId }: { orgId: number }) {
               <ProgramCard program={p} />
               <div className="-mt-1 rounded-b-xl border border-t-0 border-gray-200 bg-white px-4 pb-3">
                 <OutcomesPanel program={p} />
+                <MilestonesPanel program={p} />
+                <CohortPanel program={p} />
               </div>
             </div>
           ))}
@@ -816,6 +820,170 @@ function AnnouncementsTab({ orgId }: { orgId: number }) {
               </CardBody>
             </Card>
           ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Cohorts tab ────────────────────────────────────────────────────────── */
+
+function MilestonesPanel({ program }: { program: Program }) {
+  const { data } = useMilestones(program.id)
+  const createMilestone = useCreateMilestone(program.id)
+  const deleteMilestone = useDeleteMilestone()
+  const [open, setOpen] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const milestones: ProgramMilestone[] = data?.milestones ?? []
+
+  function handleAdd() {
+    if (!newTitle.trim()) return
+    createMilestone.mutate({ title: newTitle.trim(), position: milestones.length }, {
+      onSuccess: () => setNewTitle(''),
+    })
+  }
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+      >
+        <Flag className="h-3.5 w-3.5" />
+        {milestones.length > 0 ? `${milestones.length} milestone${milestones.length !== 1 ? 's' : ''}` : 'Add milestones'}
+        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-3 space-y-2">
+          {milestones.map((m) => (
+            <div key={m.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+              <span className="font-medium text-gray-800">{m.title}</span>
+              <button
+                onClick={() => deleteMilestone.mutate({ id: m.id, programId: program.id })}
+                className="text-gray-400 hover:text-red-500"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              placeholder="New milestone title…"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+            <Button size="sm" onClick={handleAdd} disabled={createMilestone.isPending}>Add</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CohortPanel({ program }: { program: Program }) {
+  const { data: cohortsData } = useCohorts(program.id)
+  const { data: applicationsData } = useProgramApplications(program.id)
+  const createCohort = useCreateCohort(program.id)
+  const [open, setOpen] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [cohortName, setCohortName] = useState('')
+  const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState('')
+
+  const cohorts: Cohort[] = cohortsData?.cohorts ?? []
+  const approvedApps = (applicationsData?.applications ?? []).filter((a) => a.status === 'approved')
+
+  const addMemberMutation = useAddCohortMember(selectedCohort?.id ?? 0)
+  const removeMemberMutation = useRemoveCohortMember(selectedCohort?.id ?? 0)
+
+  function handleCreateCohort() {
+    if (!cohortName.trim()) return
+    createCohort.mutate({ name: cohortName.trim() }, {
+      onSuccess: () => { setCohortName(''); setShowForm(false) },
+    })
+  }
+
+  function handleAddMember() {
+    if (!selectedCohort || !selectedUserId) return
+    addMemberMutation.mutate(parseInt(selectedUserId), {
+      onSuccess: () => setSelectedUserId(''),
+    })
+  }
+
+  const availableToAdd = approvedApps.filter(
+    (a) => !selectedCohort?.members.some((m) => m.id === a.applicant.id)
+  )
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+      >
+        <Users className="h-3.5 w-3.5" />
+        {cohorts.length > 0 ? `${cohorts.length} cohort${cohorts.length !== 1 ? 's' : ''}` : 'Create cohort'}
+        {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          {cohorts.map((cohort) => (
+            <div key={cohort.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-900 text-sm">{cohort.name}</p>
+                <span className="text-xs text-gray-500">{cohort.member_count} member{cohort.member_count !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="mt-2 space-y-1">
+                {cohort.members.map((m) => (
+                  <div key={m.id} className="flex items-center justify-between text-xs text-gray-700">
+                    <span>{m.first_name} {m.last_name}</span>
+                    <button
+                      onClick={() => removeMemberMutation.mutate(m.id)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {availableToAdd.length > 0 && (
+                <div className="mt-2 flex gap-2" onClick={() => setSelectedCohort(cohort)}>
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs"
+                  >
+                    <option value="">Add participant…</option>
+                    {availableToAdd.map((a) => (
+                      <option key={a.applicant.id} value={a.applicant.id}>{a.applicant.name}</option>
+                    ))}
+                  </select>
+                  <Button size="sm" onClick={handleAddMember} disabled={!selectedUserId}>Add</Button>
+                </div>
+              )}
+            </div>
+          ))}
+          {showForm ? (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={cohortName}
+                onChange={(e) => setCohortName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateCohort()}
+                placeholder="Cohort name (e.g. Spring 2026)"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+              />
+              <Button size="sm" onClick={handleCreateCohort} disabled={createCohort.isPending}>Create</Button>
+              <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              New Cohort
+            </Button>
+          )}
         </div>
       )}
     </div>
