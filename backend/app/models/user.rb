@@ -20,6 +20,11 @@ class User < ApplicationRecord
   has_many :followed_orgs, through: :org_followers, source: :organization
   has_many :caseloads, foreign_key: :navigator_id, dependent: :destroy
   has_many :caseload_clients, through: :caseloads, source: :client
+  has_many :client_profiles, foreign_key: :advocate_id, dependent: :destroy
+  has_many :cohort_memberships, dependent: :destroy
+  has_many :cohorts, through: :cohort_memberships
+  has_many :milestone_completions, dependent: :destroy
+  has_many :user_tasks, dependent: :destroy
 
   enum :profile_type, {
     individual_seeker: 0,
@@ -27,7 +32,8 @@ class User < ApplicationRecord
     community_org: 2,
     business_service_provider: 3,
     volunteer: 4,
-    resource_navigator: 5
+    resource_navigator: 5,
+    advocate: 6
   }
 
   validates :first_name, presence: true

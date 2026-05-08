@@ -428,7 +428,91 @@ end
 
 puts "  #{Announcement.count} announcements"
 
+# ── 14. Advocate + Client Profiles ───────────────────────────────────────────
+
+advocate_user = User.find_or_create_by!(email: "advocate@example.com") do |u|
+  u.first_name   = "Alex"
+  u.last_name    = "Advocate"
+  u.password     = "password123"
+  u.profile_type = :advocate
+  u.bio          = "Social services advocate helping clients navigate housing and employment resources."
+  u.city         = "Portland"
+  u.state        = "OR"
+end
+
+maria = ClientProfile.find_or_create_by!(advocate: advocate_user, first_name: "Maria", last_name: "Santos") do |cp|
+  cp.city             = "Portland"
+  cp.state            = "OR"
+  cp.housing_status   = :housed_at_risk
+  cp.employment_status = :unemployed_seeking
+  cp.needs_categories = ["food_nutrition", "housing_shelter"]
+  cp.urgency          = :high
+  cp.goals            = "Secure stable housing and food assistance before the end of the month."
+  cp.barriers         = "No transportation, limited English proficiency."
+end
+
+ClientProfile.find_or_create_by!(advocate: advocate_user, first_name: "David", last_name: "Chen") do |cp|
+  cp.city             = "Portland"
+  cp.state            = "OR"
+  cp.housing_status   = :housed_stable
+  cp.employment_status = :unemployed_seeking
+  cp.needs_categories = ["job_training"]
+  cp.urgency          = :medium
+  cp.goals            = "Find job training program in a tech-adjacent field."
+  cp.barriers         = "Limited work history, recent career transition."
+end
+
+puts "  #{ClientProfile.count} client profiles"
+
+# ── 15. Program Milestones ────────────────────────────────────────────────────
+
+summer_program = Program.find_by!(title: "Summer Job Training")
+
+orientation = ProgramMilestone.find_or_create_by!(program: summer_program, title: "Orientation") do |m|
+  m.description = "Attend program orientation and meet your cohort."
+  m.due_date    = summer_program.starts_on + 1.week
+  m.position    = 0
+end
+
+ProgramMilestone.find_or_create_by!(program: summer_program, title: "Midpoint Check-In") do |m|
+  m.description = "Complete midpoint skills assessment and meet with your advisor."
+  m.due_date    = summer_program.starts_on + 5.weeks
+  m.position    = 1
+end
+
+ProgramMilestone.find_or_create_by!(program: summer_program, title: "Graduation") do |m|
+  m.description = "Present your job readiness portfolio and receive your certificate."
+  m.due_date    = summer_program.ends_on
+  m.position    = 2
+end
+
+puts "  #{ProgramMilestone.count} program milestones"
+
+# ── 16. Cohort + Jason membership ─────────────────────────────────────────────
+
+jason = User.find_by!(email: "jason.intake3@example.com")
+
+spring_cohort = Cohort.find_or_create_by!(program: summer_program, name: "Spring 2026 Cohort") do |c|
+  c.starts_on = summer_program.starts_on
+  c.ends_on   = summer_program.ends_on
+  c.notes     = "First cohort for the Summer Job Training program."
+end
+
+CohortMembership.find_or_create_by!(cohort: spring_cohort, user: jason)
+
+puts "  #{Cohort.count} cohorts, #{CohortMembership.count} memberships"
+
+# ── 17. Milestone Completion for Jason ───────────────────────────────────────
+
+MilestoneCompletion.find_or_create_by!(milestone: orientation, user: jason) do |mc|
+  mc.completed_at = 1.week.ago
+  mc.notes        = "Attended orientation on time. Strong participant."
+end
+
+puts "  #{MilestoneCompletion.count} milestone completions"
+
 puts "\nDone!"
 puts "  #{User.count} users | #{Organization.count} orgs | #{EngagementOpportunity.count} opps | #{Program.count} programs"
 puts "  #{ServiceApplication.count} service apps | #{ProgramApplication.count} program apps | #{VolunteerHour.sum(:hours)}h logged"
 puts "  #{Caseload.count} caseloads | #{Referral.count} referrals | #{PartnerConnection.count} partner connections"
+puts "  #{ClientProfile.count} client profiles | #{Cohort.count} cohorts | #{ProgramMilestone.count} milestones"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,6 +35,59 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
     t.index ["client_id"], name: "index_caseloads_on_client_id"
     t.index ["navigator_id", "client_id"], name: "index_caseloads_on_navigator_id_and_client_id", unique: true
     t.index ["navigator_id"], name: "index_caseloads_on_navigator_id"
+  end
+
+  create_table "client_applications", force: :cascade do |t|
+    t.bigint "client_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.text "message"
+    t.text "notes"
+    t.bigint "program_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_profile_id"], name: "index_client_applications_on_client_profile_id"
+    t.index ["program_id"], name: "index_client_applications_on_program_id"
+  end
+
+  create_table "client_profiles", force: :cascade do |t|
+    t.bigint "advocate_id", null: false
+    t.text "barriers"
+    t.string "city"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.integer "employment_status"
+    t.string "first_name", null: false
+    t.text "goals"
+    t.integer "housing_status"
+    t.string "last_name", null: false
+    t.string "needs_categories", default: [], array: true
+    t.text "notes"
+    t.string "phone"
+    t.string "state"
+    t.datetime "updated_at", null: false
+    t.integer "urgency"
+    t.index ["advocate_id"], name: "index_client_profiles_on_advocate_id"
+  end
+
+  create_table "cohort_memberships", force: :cascade do |t|
+    t.bigint "cohort_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["cohort_id", "user_id"], name: "index_cohort_memberships_on_cohort_id_and_user_id", unique: true
+    t.index ["cohort_id"], name: "index_cohort_memberships_on_cohort_id"
+    t.index ["user_id"], name: "index_cohort_memberships_on_user_id"
+  end
+
+  create_table "cohorts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ends_on"
+    t.string "name", null: false
+    t.text "notes"
+    t.bigint "program_id", null: false
+    t.date "starts_on"
+    t.datetime "updated_at", null: false
+    t.index ["program_id"], name: "index_cohorts_on_program_id"
   end
 
   create_table "conversation_participants", force: :cascade do |t|
@@ -79,6 +132,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
     t.datetime "updated_at", null: false
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
+  create_table "milestone_completions", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.bigint "milestone_id", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["milestone_id", "user_id"], name: "index_milestone_completions_on_milestone_id_and_user_id", unique: true
+    t.index ["milestone_id"], name: "index_milestone_completions_on_milestone_id"
+    t.index ["user_id"], name: "index_milestone_completions_on_user_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -172,6 +237,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
     t.index ["user_id"], name: "index_program_applications_on_user_id"
   end
 
+  create_table "program_milestones", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.date "due_date"
+    t.integer "position", default: 0, null: false
+    t.bigint "program_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["program_id", "position"], name: "index_program_milestones_on_program_id_and_position"
+    t.index ["program_id"], name: "index_program_milestones_on_program_id"
+  end
+
   create_table "program_organizations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "organization_id", null: false
@@ -262,6 +339,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
     t.index ["user_id"], name: "index_user_intake_responses_on_user_id", unique: true
   end
 
+  create_table "user_tasks", force: :cascade do |t|
+    t.boolean "completed", default: false, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.date "due_date"
+    t.text "notes"
+    t.integer "source_id"
+    t.string "source_type"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["source_type", "source_id"], name: "index_user_tasks_on_source_type_and_source_id"
+    t.index ["user_id"], name: "index_user_tasks_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "availability"
     t.text "bio"
@@ -305,11 +397,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
   add_foreign_key "announcements", "organizations"
   add_foreign_key "caseloads", "users", column: "client_id"
   add_foreign_key "caseloads", "users", column: "navigator_id"
+  add_foreign_key "client_applications", "client_profiles"
+  add_foreign_key "client_applications", "programs"
+  add_foreign_key "client_profiles", "users", column: "advocate_id"
+  add_foreign_key "cohort_memberships", "cohorts"
+  add_foreign_key "cohort_memberships", "users"
+  add_foreign_key "cohorts", "programs"
   add_foreign_key "conversation_participants", "conversations"
   add_foreign_key "conversation_participants", "users"
   add_foreign_key "engagement_opportunities", "organizations"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "milestone_completions", "program_milestones", column: "milestone_id"
+  add_foreign_key "milestone_completions", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "org_followers", "organizations"
   add_foreign_key "org_followers", "users"
@@ -319,6 +419,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
   add_foreign_key "partner_connections", "organizations", column: "target_org_id"
   add_foreign_key "program_applications", "programs"
   add_foreign_key "program_applications", "users"
+  add_foreign_key "program_milestones", "programs"
   add_foreign_key "program_organizations", "organizations"
   add_foreign_key "program_organizations", "programs"
   add_foreign_key "programs", "organizations"
@@ -330,5 +431,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_175308) do
   add_foreign_key "service_applications", "organizations", column: "applicant_org_id"
   add_foreign_key "service_applications", "users"
   add_foreign_key "user_intake_responses", "users"
+  add_foreign_key "user_tasks", "users"
   add_foreign_key "volunteer_hours", "service_applications"
 end

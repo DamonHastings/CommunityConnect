@@ -45,9 +45,25 @@ Rails.application.routes.draw do
       resources :programs, only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "program_applications", only: [:index, :create]
         resources :organizations, controller: "program_organizations", only: [:index, :create, :destroy]
+        resources :cohorts, only: [:index, :create]
+        resources :milestones, controller: "program_milestones", only: [:index, :create]
       end
       resources :program_applications, only: [:update, :destroy]
       get "my/program_applications", to: "my_program_applications#index"
+      resources :cohorts, only: [:update, :destroy] do
+        resources :memberships, controller: "cohort_memberships", only: [:create] do
+          collection { delete ":user_id", to: "cohort_memberships#destroy" }
+        end
+      end
+      resources :milestones, controller: "program_milestones", only: [:update, :destroy] do
+        resources :completions, controller: "milestone_completions", only: [:create, :destroy]
+      end
+      get "my/tasks", to: "user_tasks#index"
+      resources :tasks, controller: "user_tasks", only: [:create, :update, :destroy]
+      resources :client_profiles do
+        resources :applications, controller: "client_applications", only: [:index, :create]
+      end
+      resources :client_applications, only: [:update]
 
       resources :opportunities, controller: "engagement_opportunities", only: [:index, :show, :update, :destroy] do
         resources :applications, controller: "service_applications", only: [:index, :create]

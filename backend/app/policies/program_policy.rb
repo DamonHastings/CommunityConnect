@@ -11,6 +11,10 @@ class ProgramPolicy < ApplicationPolicy
     user.present? && co_orgs.any? { |org| user.admin_of?(org) }
   end
 
+  def view_applications?
+    user.present? && co_orgs.any? { |org| user.member_of?(org) }
+  end
+
   private
 
   def co_orgs

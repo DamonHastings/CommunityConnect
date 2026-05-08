@@ -3,6 +3,9 @@ class Program < ApplicationRecord
   has_many :program_applications, dependent: :destroy
   has_many :program_organizations, dependent: :destroy
   has_many :co_organizations, through: :program_organizations, source: :organization
+  has_many :cohorts, dependent: :destroy
+  has_many :program_milestones, dependent: :destroy
+  has_many :client_applications, dependent: :destroy
 
   after_create :create_owner_program_organization
 
