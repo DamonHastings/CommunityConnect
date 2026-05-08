@@ -5,9 +5,9 @@ Features are derived from the [use cases](use-cases.md) and prioritized by:
 - **P0** — Foundational: blocks multiple use cases; platform can't function without it
 - **P1** — Core value: directly enables the primary journeys for most actor types
 - **P2** — Differentiating: improves experience and enables secondary journeys
-- **P3** — Advanced / AI-powered: Phase 2 roadmap
+- **P3** — Advanced / AI-powered: maps to Ancchor sheet v3 phase
 
-Items marked ✅ are already built. Items without a mark need to be built.
+Items marked ✅ are already built.
 
 ---
 
@@ -19,7 +19,7 @@ Items marked ✅ are already built. Items without a mark need to be built.
 | 2   | Organization profiles (create, edit, discover)                                                                     | UC-2, UC-3, UC-6 | ✅     | CRUD, geocoding, full-text search                                                                                  |
 | 3   | Organization discoverability (search + filter)                                                                     | UC-2, UC-3, UC-4 | ✅     | pg_search, category/location filters                                                                               |
 | 4   | Individual user profiles (beyond auth — bio, services offered/needed, role type)                                   | UC-1, UC-5       | ✅     | profile_type enum, bio, phone, city/state, website, availability, services_offered/needed arrays; edit at /profile |
-| 5   | Account/profile type system (individual seeker, individual professional, community org, business/service provider) | UC-1, UC-3, UC-5 | ✅     | 4-way enum on User; selected during registration (step 2); drives label display throughout app                     |
+| 5   | Account/profile type system (individual seeker, individual professional, community org, business/service provider) | UC-1, UC-3, UC-5 | ✅     | 6-way enum on User: individual_seeker, individual_professional, community_org, business_service_provider, volunteer, resource_navigator |
 
 ---
 
@@ -27,13 +27,13 @@ Items marked ✅ are already built. Items without a mark need to be built.
 
 | #   | Feature                                               | Use Cases  | Status | Notes                                                                                                           |
 | --- | ----------------------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------------------------------- |
-| 6   | Intake questionnaire / needs assessment               | UC-1       | ✅     | Multi-step form on signup for individuals seeking resources; responses drive service matching                   |
-| 7   | Need-based service and resource matching              | UC-1       | ✅     | Match questionnaire responses to available org services and opportunities                                       |
-| 8   | Service application workflow                          | UC-1       | —      | Individuals apply to services/resources; orgs receive and manage applications                                   |
-| 9   | Individual service management dashboard               | UC-1       | —      | Jason tracks which services he's applied to, connected with, and their status                                   |
-| 10  | Program creation and management                       | UC-2, UC-6 | —      | Richer than current EngagementOpportunity; programs have phases, partners, capacity, dates, application windows |
-| 11  | Application intake and processing for programs        | UC-2, UC-6 | —      | Orgs receive applications, review, approve/reject, communicate with applicants                                  |
-| 12  | Individual professional profiles with service tagging | UC-5       | —      | Rachel-type profiles: specialty, service type, communities served, availability                                 |
+| 6   | Intake questionnaire / needs assessment               | UC-1       | ✅     | Multi-step form on signup for individual_seeker; responses drive service matching; upsert pattern on UserIntakeResponse |
+| 7   | Need-based service and resource matching              | UC-1       | ✅     | Matches intake responses to org services and opportunities; /dashboard shows ranked results                     |
+| 8   | Service application workflow                          | UC-1       | ✅     | ServiceApplication model (pending/approved/rejected/withdrawn); org manage page Applications tab; My Services seeker view |
+| 9   | Individual service management dashboard               | UC-1       | ✅     | /my-services: active applications, approved services, volunteer hours log, saved orgs, program applications     |
+| 10  | Program creation and management                       | UC-2, UC-6 | ✅     | Program model with phases, partners (ProgramOrganization join), capacity, dates, application windows; /programs and /organizations/:id/manage Programs tab |
+| 11  | Application intake and processing for programs        | UC-2, UC-6 | ✅     | ProgramApplication model; org admins approve/reject from manage page; applicants see status in My Services      |
+| 12  | Individual professional profiles with service tagging | UC-5       | ✅     | individual_professional profile_type; specialty, services_offered, communities_served; discoverable via /professionals People page |
 
 ---
 
@@ -41,17 +41,19 @@ Items marked ✅ are already built. Items without a mark need to be built.
 
 | #   | Feature                                   | Use Cases  | Status | Notes                                                                                              |
 | --- | ----------------------------------------- | ---------- | ------ | -------------------------------------------------------------------------------------------------- |
-| 13  | Partner discovery and connection tools    | UC-2       | —      | Orgs can search for and invite other orgs/individuals as program partners                          |
-| 14  | Joint / multi-org program ownership       | UC-6       | —      | A program can have multiple owning orgs; co-admins manage shared application queue                 |
-| 15  | In-platform messaging / contact mechanism | UC-1, UC-5 | —      | Jason contacts service providers; Rachel is contacted by orgs and individuals                      |
-| 16  | Org visibility and outreach tools         | UC-2       | —      | Featured listings, suggested connections, announcement broadcasting                                |
-| 17  | Business / service-provider profile type  | UC-3       | —      | Atnap-style profiles: commercial studio/agency targeting org clients; distinct from community orgs |
-| 18  | Funding and grant application tooling     | UC-6       | —      | Joint programs can publish funding needs; funders or grant-makers can respond                      |
-| 19  | Org-to-individual referrals               | UC-1, UC-4 | —      | Service providers can refer individuals to other relevant orgs or programs on the platform         |
+| 13  | Partner discovery and connection tools    | UC-2       | ✅     | PartnerConnection model (pending/accepted/declined); Request Partnership button on org profiles; Partners tab in org manage page |
+| 14  | Joint / multi-org program ownership       | UC-6       | ✅     | ProgramOrganization join table (owner/partner roles); co-org admins share application queue        |
+| 15  | In-platform messaging / contact mechanism | UC-1, UC-5 | ✅     | Conversation + ConversationParticipant + Message models; unread badge in sidebar; message icons on partner/applicant cards |
+| 16  | Org visibility and outreach tools         | UC-2       | ✅     | Announcement model; featured listings; org follow/unfollow (OrgFollower); activity feed (/feed)    |
+| 17  | Business / service-provider profile type  | UC-3       | ✅     | business_service_provider profile_type; org_type enum (nonprofit/business/school/foundation)        |
+| 18  | Funding and grant application tooling     | UC-6       | ✅     | funding opportunity_type on EngagementOpportunity; award_amount + disbursed on ServiceApplication; foundation-specific grant review UX |
+| 19  | Org-to-individual referrals               | UC-1, UC-4 | ✅     | Referral model (referring_org → referred_user → target Program or Org); /caseload for navigator-driven referrals; referral feed items |
 
 ---
 
-## P3 — Advanced / AI-Powered (Phase 2)
+## P3 — Advanced / AI-Powered
+
+Maps to **Ancchor sheet v3 phase** (12 stories). See also [phase3-roadmap.md](phase3-roadmap.md) for the full v2+v3 breakdown.
 
 | #   | Feature                                 | Use Cases  | Status | Notes                                                                                                                           |
 | --- | --------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -69,22 +71,22 @@ Items marked ✅ are already built. Items without a mark need to be built.
 | Org profiles (✅)                |            |         ●         |     ●      |          ●          |             |      ●      |
 | Org search/discovery (✅)        |            |         ●         |     ●      |          ●          |             |             |
 | Auth (✅)                        |     ●      |         ●         |     ●      |                     |      ●      |      ●      |
-| Individual profiles              |     ●      |                   |            |                     |      ●      |             |
-| Profile type system              |     ●      |         ●         |     ●      |                     |      ●      |      ●      |
-| Intake questionnaire             |     ●      |                   |            |                     |             |             |
-| Service matching                 |     ●      |                   |            |          ●          |             |             |
-| Service application workflow     |     ●      |                   |            |                     |             |             |
-| Individual dashboard             |     ●      |                   |            |                     |             |             |
-| Program creation                 |            |         ●         |            |                     |             |      ●      |
-| Application intake               |            |         ●         |            |                     |             |      ●      |
-| Individual professional profiles |            |                   |            |                     |      ●      |             |
-| Partner discovery                |            |         ●         |            |                     |             |      ●      |
-| Joint program ownership          |            |                   |            |                     |             |      ●      |
-| In-platform messaging            |     ●      |                   |            |                     |      ●      |             |
-| Org outreach tools               |            |         ●         |     ●      |                     |             |             |
-| Business profile type            |            |                   |     ●      |                     |             |             |
-| Funding tooling                  |            |                   |            |                     |             |      ●      |
-| Org-to-individual referrals      |     ●      |                   |            |          ●          |             |             |
+| Individual profiles (✅)         |     ●      |                   |            |                     |      ●      |             |
+| Profile type system (✅)         |     ●      |         ●         |     ●      |                     |      ●      |      ●      |
+| Intake questionnaire (✅)        |     ●      |                   |            |                     |             |             |
+| Service matching (✅)            |     ●      |                   |            |          ●          |             |             |
+| Service application workflow (✅)|     ●      |                   |            |                     |             |             |
+| Individual dashboard (✅)        |     ●      |                   |            |                     |             |             |
+| Program creation (✅)            |            |         ●         |            |                     |             |      ●      |
+| Application intake (✅)          |            |         ●         |            |                     |             |      ●      |
+| Individual professional (✅)     |            |                   |            |                     |      ●      |             |
+| Partner discovery (✅)           |            |         ●         |            |                     |             |      ●      |
+| Joint program ownership (✅)     |            |                   |            |                     |             |      ●      |
+| In-platform messaging (✅)       |     ●      |                   |            |                     |      ●      |             |
+| Org outreach tools (✅)          |            |         ●         |     ●      |                     |             |             |
+| Business profile type (✅)       |            |                   |     ●      |                     |             |             |
+| Funding tooling (✅)             |            |                   |            |                     |             |      ●      |
+| Org-to-individual referrals (✅) |     ●      |                   |            |          ●          |             |             |
 | AI: institutional profiling      |            |                   |            |          ●          |             |             |
 | AI: smart matching               |     ●      |                   |            |          ●          |             |             |
 | AI: outreach drafting            |            |         ●         |            |                     |             |             |
