@@ -5,6 +5,7 @@ export type ProfileType =
   | 'business_service_provider'
   | 'volunteer'
   | 'resource_navigator'
+  | 'advocate'
 
 export interface UserOrganization {
   id: number
@@ -301,4 +302,72 @@ export interface Notification {
 export interface ApiError {
   error?: string
   errors?: string[]
+}
+
+export interface Cohort {
+  id: number
+  program_id: number
+  name: string
+  starts_on: string | null
+  ends_on: string | null
+  notes: string | null
+  member_count: number
+  members: { id: number; first_name: string; last_name: string; email: string }[]
+  created_at: string
+}
+
+export interface ProgramMilestone {
+  id: number
+  program_id: number
+  title: string
+  description: string | null
+  due_date: string | null
+  position: number
+  completed_by_current_user: boolean
+  completion_count: number
+  created_at: string
+}
+
+export interface UserTask {
+  id: number
+  title: string
+  notes: string | null
+  due_date: string | null
+  completed: boolean
+  completed_at: string | null
+  source_type: string | null
+  source_id: number | null
+  created_at: string
+}
+
+export interface ClientProfile {
+  id: number
+  first_name: string
+  last_name: string
+  full_name: string
+  email: string | null
+  phone: string | null
+  city: string | null
+  state: string | null
+  housing_status: string | null
+  employment_status: string | null
+  needs_categories: string[]
+  urgency: string | null
+  goals: string | null
+  barriers: string | null
+  notes: string | null
+  application_count: number
+  created_at: string
+}
+
+export interface ClientApplication {
+  id: number
+  client_profile_id: number
+  program_id: number
+  status: ApplicationStatus
+  message: string | null
+  notes: string | null
+  program: { id: number; title: string }
+  client_profile: { id: number; full_name: string }
+  created_at: string
 }

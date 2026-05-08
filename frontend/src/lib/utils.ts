@@ -31,7 +31,8 @@ export const PROFILE_TYPE_LABELS: Record<ProfileType, string> = {
   community_org: 'Community Organization',
   business_service_provider: 'Business / Service Provider',
   volunteer: 'Volunteer',
-  resource_navigator: 'Resource Navigator / Advocate',
+  resource_navigator: 'Resource Navigator',
+  advocate: 'Advocate',
 }
 
 export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string; description: string }[] = [
@@ -64,6 +65,11 @@ export const PROFILE_TYPE_OPTIONS: { value: ProfileType; label: string; descript
     value: 'business_service_provider',
     label: 'Business / service provider',
     description: 'I represent a commercial business that partners with or serves community organizations.',
+  },
+  {
+    value: 'advocate',
+    label: 'Advocate',
+    description: 'I manage cases and applications on behalf of individuals who need support accessing services.',
   },
 ]
 
